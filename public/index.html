@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Super José Supermercado — Pix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#2F5AFF;
+    --blue-dark:#1E3FCC;
+    --blue-tint:#EEF2FF;
+    --ink:#0B0D12;
+    --ink-soft:#6B7280;
+    --line:#E5E7EB;
+    --bg:#FFFFFF;
+    --green:#16A34A;
+    --green-tint:#EAFBF1;
+    --radius:16px;
+    --radius-sm:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:24px;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+
+  .app{
+    width:100%;
+    max-width:400px;
+  }
+
+  /* ---------- Header / marca ---------- */
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:28px;
+  }
+  .brand-icon{
+    width:36px; height:36px;
+    border-radius:10px;
+    background:var(--blue);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+    /* Troque por: <img src="URL_DA_LOGO" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"> quando a logo chegar */
+  }
+  .brand-icon svg{ width:20px; height:20px; }
+  .brand-name{
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .brand-sub{
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  /* ---------- Card ---------- */
+  .card{
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:32px 28px;
+  }
+  .step-label{
+    font-size:12px;
+    font-weight:600;
+    color:var(--blue);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:8px;
+  }
+  h1{
+    font-size:20px;
+    font-weight:600;
+    letter-spacing:-0.015em;
+    margin-bottom:6px;
+  }
+  .subtitle{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin-bottom:24px;
+    line-height:1.5;
+  }
+
+  /* ---------- Inputs ---------- */
+  .field{ margin-bottom:16px; }
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    font-size:15px;
+    font-family:inherit;
+    color:var(--ink);
+    background:#fff;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .field input:focus{
+    outline:none;
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px var(--blue-tint);
+  }
+  .field input::placeholder{ color:#B0B4BC; }
+
+  .valor-input{
+    font-family:'JetBrains Mono', monospace;
+    font-size:32px !important;
+    font-weight:600;
+    text-align:center;
+    padding:20px 14px !important;
+    letter-spacing:-0.02em;
+  }
+
+  /* ---------- Botão ---------- */
+  .btn{
+    width:100%;
+    padding:13px 16px;
+    border:none;
+    border-radius:var(--radius-sm);
+    background:var(--blue);
+    color:#fff;
+    font-size:15px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+    transition:background .15s ease, transform .05s ease;
+  }
+  .btn:hover{ background:var(--blue-dark); }
+  .btn:active{ transform:scale(0.98); }
+  .btn:disabled{ background:#C7D0F5; cursor:not-allowed; }
+  .btn-ghost{
+    width:100%;
+    padding:13px 16px;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    background:transparent;
+    color:var(--ink);
+    font-size:14px;
+    font-weight:500;
+    font-family:inherit;
+    cursor:pointer;
+    margin-top:10px;
+  }
+  .btn-ghost:hover{ border-color:#C7CBD3; }
+
+  .erro{
+    font-size:13px;
+    color:#DC2626;
+    margin-top:-8px;
+    margin-bottom:14px;
+    display:none;
+  }
+
+  /* ---------- Tela de valor: caixa logado ---------- */
+  .caixa-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--blue-tint);
+    color:var(--blue-dark);
+    font-size:12px;
+    font-weight:600;
+    padding:5px 10px;
+    border-radius:100px;
+    margin-bottom:20px;
+  }
+  .caixa-tag .dot{
+    width:6px; height:6px; border-radius:50%; background:var(--blue);
+  }
+
+  /* ---------- QR / aguardando ---------- */
+  .qr-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+  .qr-ring{
+    position:relative;
+    width:220px; height:220px;
+    border-radius:20px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:20px;
+  }
+  .qr-ring::before{
+    content:'';
+    position:absolute;
+    inset:-8px;
+    border-radius:24px;
+    border:2px solid var(--blue);
+    opacity:0.35;
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%{ transform:scale(1); opacity:0.5; }
+    70%{ transform:scale(1.08); opacity:0; }
+    100%{ transform:scale(1.08); opacity:0; }
+  }
+  .qr-img{
+    width:200px; height:200px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:#fff;
+  }
+  .qr-status{
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin-bottom:4px;
+  }
+  .qr-status .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--blue);
+    animation:blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink{
+    0%,100%{ opacity:1; }
+    50%{ opacity:0.25; }
+  }
+  .qr-valor{
+    font-family:'JetBrains Mono', monospace;
+    font-size:28px;
+    font-weight:600;
+    margin:14px 0 4px;
+  }
+  .qr-hint{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    max-width:260px;
+    line-height:1.5;
+    margin-top:6px;
+  }
+
+  /* ---------- Confirmado ---------- */
+  .check-wrap{
+    display:flex; align-items:center; justify-content:center;
+    width:64px; height:64px;
+    border-radius:50%;
+    background:var(--green-tint);
+    margin:0 auto 18px;
+  }
+  .check-wrap svg{ width:30px; height:30px; }
+  .confirmado-titulo{
+    text-align:center;
+    font-size:19px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .confirmado-sub{
+    text-align:center;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:22px;
+  }
+  .comprovante{
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:16px 18px;
+    margin-bottom:20px;
+  }
+  .comprovante-linha{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid #F2F3F5;
+    font-size:13.5px;
+  }
+  .comprovante-linha:last-child{ border-bottom:none; }
+  .comprovante-linha span:first-child{ color:var(--ink-soft); }
+  .comprovante-linha span:last-child{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:500;
+  }
+
+  .hidden{ display:none !important; }
+
+  footer{
+    text-align:center;
+    font-size:11.5px;
+    color:#B0B4BC;
+    margin-top:20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="brand">
+    <div class="brand-icon">
+      <!-- Icone provisorio (raio = Pix). Troque por <img> com a URL da logo depois. -->
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">Super José Supermercado</div>
+      <div class="brand-sub">Sistema de Pix</div>
+    </div>
+  </div>
+
+  <!-- ============ TELA 1: LOGIN ============ -->
+  <section id="tela-login" class="card">
+    <div class="step-label">Acesso</div>
+    <h1>Login do caixa</h1>
+    <p class="subtitle">Informe o número do seu caixa e a senha para começar.</p>
+
+    <div class="field">
+      <label for="input-caixa">Número do caixa</label>
+      <input id="input-caixa" type="number" inputmode="numeric" placeholder="Ex: 12" />
+    </div>
+    <div class="field">
+      <label for="input-senha">Senha</label>
+      <input id="input-senha" type="password" placeholder="••••••" />
+    </div>
+    <div id="erro-login" class="erro">Caixa ou senha incorretos.</div>
+
+    <button class="btn" id="btn-login">Entrar</button>
+  </section>
+
+  <!-- ============ TELA 2: VALOR DA COMPRA ============ -->
+  <section id="tela-valor" class="card hidden">
+    <span class="caixa-tag"><span class="dot"></span><span id="tag-caixa-nome">Caixa 12</span></span>
+    <h1>Valor da compra</h1>
+    <p class="subtitle">Digite o valor para gerar o Pix.</p>
+
+    <div class="field">
+      <input id="input-valor" class="valor-input" type="text" inputmode="decimal" placeholder="R$ 0,00" />
+    </div>
+    <div id="erro-valor" class="erro">Informe um valor válido.</div>
+
+    <button class="btn" id="btn-gerar">Gerar Pix</button>
+    <button class="btn-ghost" id="btn-logout">Sair</button>
+  </section>
+
+  <!-- ============ TELA 3: QR CODE / AGUARDANDO ============ -->
+  <section id="tela-qr" class="card hidden">
+    <div class="qr-wrap">
+      <div class="step-label">Escaneie para pagar</div>
+      <div class="qr-ring">
+        <img id="qr-img" class="qr-img" src="" alt="QR Code Pix" />
+      </div>
+      <div class="qr-status"><span class="dot"></span> Aguardando pagamento</div>
+      <div class="qr-valor mono" id="qr-valor">R$ 0,00</div>
+      <p class="qr-hint">Peça para o cliente abrir o app do banco e escanear o código. O valor e o destinatário já vêm preenchidos automaticamente.</p>
+      <button class="btn-ghost" id="btn-cancelar-qr" style="margin-top:22px;">Cancelar cobrança</button>
+    </div>
+  </section>
+
+  <!-- ============ TELA 4: CONFIRMADO ============ -->
+  <section id="tela-confirmado" class="card hidden">
+    <div class="check-wrap">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 13L9.5 17.5L19 7" stroke="#16A34A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="confirmado-titulo">Pagamento confirmado</div>
+    <div class="confirmado-sub">O comprovante já foi enviado para a impressora.</div>
+
+    <div class="comprovante">
+      <div class="comprovante-linha"><span>Caixa</span><span id="rec-caixa">—</span></div>
+      <div class="comprovante-linha"><span>Valor</span><span id="rec-valor">—</span></div>
+      <div class="comprovante-linha"><span>Horário</span><span id="rec-hora">—</span></div>
+      <div class="comprovante-linha"><span>ID da transação</span><span id="rec-id">—</span></div>
+    </div>
+
+    <button class="btn" id="btn-novo">Novo pagamento</button>
+  </section>
+
+  <footer>Super José Supermercado &middot; Pix automático</footer>
+</div>
+
+<script>
+  // ===================================================================
+  // CONFIG — ajuste conforme onde o backend estiver rodando
+  // ===================================================================
+  const API_BASE = ''; // ex: 'https://seu-backend.exemplo.com' — vazio = mesmo host
+
+  // ===================================================================
+  // Estado em memória (nada de localStorage)
+  // ===================================================================
+  let estado = {
+    token: null,
+    caixaId: null,
+    caixaNome: null,
+    externalReference: null,
+    pollTimer: null,
+  };
+
+  const telas = {
+    login: document.getElementById('tela-login'),
+    valor: document.getElementById('tela-valor'),
+    qr: document.getElementById('tela-qr'),
+    confirmado: document.getElementById('tela-confirmado'),
+  };
+
+  function mostrarTela(nome){
+    Object.values(telas).forEach(t => t.classList.add('hidden'));
+    telas[nome].classList.remove('hidden');
+  }
+
+  function formatarMoeda(valorNumerico){
+    return valorNumerico.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+  }
+
+  // ===================================================================
+  // TELA 1 — Login
+  // ===================================================================
+  document.getElementById('btn-login').addEventListener('click', async () => {
+    const caixaId = document.getElementById('input-caixa').value.trim();
+    const senha = document.getElementById('input-senha').value;
+    const erroEl = document.getElementById('erro-login');
+    erroEl.style.display = 'none';
+
+    if (!caixaId || !senha) {
+      erroEl.textContent = 'Preencha o número do caixa e a senha.';
+      erroEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caixaId: Number(caixaId), senha }),
+      });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        erroEl.textContent = data.erro || 'Não foi possível entrar.';
+        erroEl.style.display = 'block';
+        return;
+      }
+
+      estado.token = data.token;
+      estado.caixaId = data.caixa.id;
+      estado.caixaNome = data.caixa.nome;
+
+      document.getElementById('tag-caixa-nome').textContent = estado.caixaNome;
+      mostrarTela('valor');
+    } catch (e) {
+      erroEl.textContent = 'Erro de conexão com o servidor.';
+      erroEl.style.display = 'block';
+    }
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    estado.token = null;
+    estado.caixaId = null;
+    document.getElementById('input-senha').value = '';
+    mostrarTela('login');
+  });
+
+  // ===================================================================
+  // TELA 2 — Gerar cobrança
+  // ===================================================================
+  document.getElementById('btn-gerar').addEventListener('click', async () => {
+    const bruto = document.getElementById('input-valor').value.replace(',', '.').replace(/[^\d.]/g, '');
+    const valor = parseFloat(bruto);
+    const erroEl = document.getElementById('erro-valor');
+    erroEl.style.display = 'none';
+
+    if (!valor || valor <= 0) {
+      erroEl.textContent = 'Informe um valor válido.';
+      erroEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_BASE}/pix/gerar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${estado.token}`,
+        },
+        body: JSON.stringify({ valor }),
+      });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        erroEl.textContent = data.erro || 'Não foi possível gerar o Pix.';
+        erroEl.style.display = 'block';
+        return;
+      }
+
+      estado.externalReference = data.externalReference;
+      document.getElementById('qr-img').src = `data:image/png;base64,${data.qrCodeBase64}`;
+      document.getElementById('qr-valor').textContent = formatarMoeda(valor);
+      mostrarTela('qr');
+      iniciarPolling();
+    } catch (e) {
+      erroEl.textContent = 'Erro de conexão com o servidor.';
+      erroEl.style.display = 'block';
+    }
+  });
+
+  document.getElementById('btn-cancelar-qr').addEventListener('click', () => {
+    pararPolling();
+    mostrarTela('valor');
+  });
+
+  // ===================================================================
+  // TELA 3 — Aguardando pagamento (polling de status)
+  // Obs: quando o webhook do Mercado Pago confirmar, o backend atualiza
+  // o status no banco. Aqui o front so pergunta "ja foi pago?" de tempos
+  // em tempos. (Depois da pra trocar por WebSocket/SSE se quiser tempo real.)
+  // ===================================================================
+  function iniciarPolling(){
+    estado.pollTimer = setInterval(async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/pix/status/${estado.externalReference}`, {
+          headers: { 'Authorization': `Bearer ${estado.token}` },
+        });
+        const data = await resp.json();
+
+        if (data.status === 'aprovado') {
+          pararPolling();
+          document.getElementById('rec-caixa').textContent = estado.caixaNome;
+          document.getElementById('rec-valor').textContent = formatarMoeda(data.valor);
+          document.getElementById('rec-hora').textContent = new Date(data.pagoEm).toLocaleTimeString('pt-BR');
+          document.getElementById('rec-id').textContent = data.mpPaymentId;
+          mostrarTela('confirmado');
+        }
+      } catch (e) {
+        // silencioso — tenta de novo no proximo ciclo
+      }
+    }, 3000);
+  }
+
+  function pararPolling(){
+    if (estado.pollTimer) clearInterval(estado.pollTimer);
+    estado.pollTimer = null;
+  }
+
+  // ===================================================================
+  // TELA 4 — Novo pagamento
+  // ===================================================================
+  document.getElementById('btn-novo').addEventListener('click', () => {
+    document.getElementById('input-valor').value = '';
+    mostrarTela('valor');
+  });
+</script>
+</body>
+</html>
