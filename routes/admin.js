@@ -93,7 +93,7 @@ router.get('/historico/detalhe', async (req, res) => {
 
   const { data, error } = await supabase
     .from('transacoes_pix')
-    .select('id, valor, status, criado_em, pago_em, mp_payment_id, external_reference')
+    .select('id, valor, turno, status, criado_em, pago_em, mp_payment_id, external_reference')
     .eq('caixa_id', caixaId)
     .gte('criado_em', `${dia}T00:00:00`)
     .lte('criado_em', `${dia}T23:59:59`)
