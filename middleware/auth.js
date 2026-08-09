@@ -10,7 +10,7 @@ function autenticarCaixa(req, res, next) {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.caixa = { id: payload.caixaId, nome: payload.nome };
+    req.caixa = { id: payload.caixaId, nome: payload.nome, turno: payload.turno };
     next();
   } catch {
     return res.status(401).json({ erro: 'Token inválido ou expirado' });
