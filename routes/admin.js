@@ -15,14 +15,16 @@ router.get('/caixas', async (req, res) => {
   return res.json(data);
 });
 
-// POST /admin/caixas  { caixaId, nome, senha }
+// POST /admin/caixas  { caixaId, senha }
+// O nome do caixa e gerado automaticamente como "Caixa <numero>".
 router.post('/caixas', async (req, res) => {
-  const { caixaId, nome, senha } = req.body;
+  const { caixaId, senha } = req.body;
 
-  if (!caixaId || !nome || !senha) {
-    return res.status(400).json({ erro: 'caixaId, nome e senha são obrigatórios' });
+  if (!caixaId || !senha) {
+    return res.status(400).json({ erro: 'caixaId e senha são obrigatórios' });
   }
 
+  const nome = `Caixa ${caixaId}`;
   const senha_hash = await bcrypt.hash(senha, 10);
 
   const { data, error } = await supabase
