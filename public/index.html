@@ -17,6 +17,8 @@
     --bg:#FFFFFF;
     --green:#16A34A;
     --green-tint:#EAFBF1;
+    --red:#DC2626;
+    --red-tint:#FEF2F2;
     --radius:16px;
     --radius-sm:10px;
   }
@@ -28,7 +30,7 @@
     font-family:'Inter', system-ui, sans-serif;
     -webkit-font-smoothing:antialiased;
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:center;
     min-height:100vh;
     padding:24px;
@@ -38,6 +40,7 @@
   .app{
     width:100%;
     max-width:400px;
+    margin-top:6vh;
   }
 
   /* ---------- Header / marca ---------- */
@@ -53,7 +56,6 @@
     background:var(--blue);
     display:flex; align-items:center; justify-content:center;
     flex-shrink:0;
-    /* Troque por: <img src="URL_DA_LOGO" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"> quando a logo chegar */
   }
   .brand-icon svg{ width:20px; height:20px; }
   .brand-name{
@@ -103,7 +105,7 @@
     color:var(--ink);
     margin-bottom:6px;
   }
-  .field input{
+  .field input, .field select{
     width:100%;
     padding:12px 14px;
     border:1px solid var(--line);
@@ -114,7 +116,7 @@
     background:#fff;
     transition:border-color .15s ease, box-shadow .15s ease;
   }
-  .field input:focus{
+  .field input:focus, .field select:focus{
     outline:none;
     border-color:var(--blue);
     box-shadow:0 0 0 3px var(--blue-tint);
@@ -162,9 +164,60 @@
   }
   .btn-ghost:hover{ border-color:#C7CBD3; }
 
+  .btn-outline{
+    width:100%;
+    padding:16px 16px;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    background:#fff;
+    color:var(--ink);
+    font-size:15px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .btn-outline:hover{ border-color:var(--blue); background:var(--blue-tint); }
+  .btn-outline .desc{
+    display:block;
+    font-size:12px;
+    font-weight:400;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .btn-outline .arrow{ color:var(--ink-soft); font-size:18px; }
+
+  .opcoes-inicio{ display:flex; flex-direction:column; gap:12px; }
+
+  .btn-sm{
+    padding:7px 12px;
+    font-size:12px;
+    font-weight:500;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+    color:var(--ink);
+    cursor:pointer;
+    font-family:inherit;
+    white-space:nowrap;
+  }
+  .btn-sm:hover{ border-color:#C7CBD3; }
+  .btn-sm-danger{ color:var(--red); border-color:#FCA5A5; }
+  .btn-sm-danger:hover{ background:var(--red-tint); }
+
   .erro{
     font-size:13px;
     color:#DC2626;
+    margin-top:-8px;
+    margin-bottom:14px;
+    display:none;
+  }
+  .aviso-ok{
+    font-size:13px;
+    color:var(--green);
     margin-top:-8px;
     margin-bottom:14px;
     display:none;
@@ -295,6 +348,38 @@
     font-weight:500;
   }
 
+  /* ---------- Admin ---------- */
+  .admin-secao{ margin-top:26px; }
+  .admin-secao:first-of-type{ margin-top:0; }
+  .admin-secao-titulo{
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    margin-bottom:12px;
+  }
+  .lista{ border:1px solid var(--line); border-radius:var(--radius-sm); overflow:hidden; }
+  .lista-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .lista-item:last-child{ border-bottom:none; }
+  .lista-item .info{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .lista-item .info .principal{ font-weight:500; }
+  .lista-item .info .secundario{ font-size:12px; color:var(--ink-soft); }
+  .tag-ativo{ color:var(--green); font-size:11px; font-weight:600; }
+  .tag-inativo{ color:var(--red); font-size:11px; font-weight:600; }
+  .vazio{ font-size:13px; color:var(--ink-soft); padding:14px; text-align:center; }
+  .clicavel{ cursor:pointer; }
+  .clicavel:hover{ background:var(--blue-tint); }
+  .valor-destaque{ font-family:'JetBrains Mono', monospace; font-weight:600; }
+
   .hidden{ display:none !important; }
 
   footer{
@@ -310,7 +395,6 @@
 <div class="app">
   <div class="brand">
     <div class="brand-icon">
-      <!-- Icone provisorio (raio = Pix). Troque por <img> com a URL da logo depois. -->
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
       </svg>
@@ -321,8 +405,32 @@
     </div>
   </div>
 
-  <!-- ============ TELA 1: LOGIN ============ -->
-  <section id="tela-login" class="card">
+  <!-- ============ TELA 0: INICIO ============ -->
+  <section id="tela-inicio" class="card">
+    <div class="step-label">Bem-vindo</div>
+    <h1>Como você quer entrar?</h1>
+    <p class="subtitle">Escolha uma opção para continuar.</p>
+
+    <div class="opcoes-inicio">
+      <button class="btn-outline" id="btn-ir-operador">
+        <span>
+          Operador
+          <span class="desc">Login do caixa para gerar Pix</span>
+        </span>
+        <span class="arrow">›</span>
+      </button>
+      <button class="btn-outline" id="btn-ir-admin">
+        <span>
+          Administrador
+          <span class="desc">Criar caixas e ver histórico</span>
+        </span>
+        <span class="arrow">›</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ TELA 1: LOGIN OPERADOR ============ -->
+  <section id="tela-login" class="card hidden">
     <div class="step-label">Acesso</div>
     <h1>Login do caixa</h1>
     <p class="subtitle">Informe o número do seu caixa e a senha para começar.</p>
@@ -338,6 +446,7 @@
     <div id="erro-login" class="erro">Caixa ou senha incorretos.</div>
 
     <button class="btn" id="btn-login">Entrar</button>
+    <button class="btn-ghost" id="btn-voltar-inicio-1">Voltar</button>
   </section>
 
   <!-- ============ TELA 2: VALOR DA COMPRA ============ -->
@@ -389,6 +498,82 @@
     <button class="btn" id="btn-novo">Novo pagamento</button>
   </section>
 
+  <!-- ============ TELA 5: LOGIN ADMIN ============ -->
+  <section id="tela-admin-login" class="card hidden">
+    <div class="step-label">Acesso</div>
+    <h1>Área do administrador</h1>
+    <p class="subtitle">Informe a senha de administrador para continuar.</p>
+
+    <div class="field">
+      <label for="input-admin-senha">Senha de administrador</label>
+      <input id="input-admin-senha" type="password" placeholder="••••••" />
+    </div>
+    <div id="erro-admin-login" class="erro">Senha incorreta.</div>
+
+    <button class="btn" id="btn-admin-entrar">Entrar</button>
+    <button class="btn-ghost" id="btn-voltar-inicio-2">Voltar</button>
+  </section>
+
+  <!-- ============ TELA 6: PAINEL ADMIN ============ -->
+  <section id="tela-admin-painel" class="card hidden">
+    <div class="step-label">Administrador</div>
+    <h1>Painel</h1>
+    <p class="subtitle">Gerencie os caixas e veja o histórico de Pix.</p>
+
+    <!-- Criar caixa -->
+    <div class="admin-secao">
+      <div class="admin-secao-titulo">Criar novo caixa</div>
+      <div class="field">
+        <label for="novo-caixa-id">Número do caixa</label>
+        <input id="novo-caixa-id" type="number" inputmode="numeric" placeholder="Ex: 12" />
+      </div>
+      <div class="field">
+        <label for="novo-caixa-nome">Nome</label>
+        <input id="novo-caixa-nome" type="text" placeholder="Ex: Caixa 12" />
+      </div>
+      <div class="field">
+        <label for="novo-caixa-senha">Senha</label>
+        <input id="novo-caixa-senha" type="password" placeholder="••••••" />
+      </div>
+      <div id="erro-novo-caixa" class="erro">Não foi possível criar o caixa.</div>
+      <div id="ok-novo-caixa" class="aviso-ok">Caixa criado com sucesso.</div>
+      <button class="btn" id="btn-criar-caixa">Criar caixa</button>
+    </div>
+
+    <!-- Lista de caixas -->
+    <div class="admin-secao">
+      <div class="admin-secao-titulo">Caixas cadastrados</div>
+      <div id="lista-caixas" class="lista">
+        <div class="vazio">Carregando...</div>
+      </div>
+    </div>
+
+    <!-- Historico -->
+    <div class="admin-secao">
+      <div class="admin-secao-titulo">Histórico de Pix</div>
+      <div class="field">
+        <label for="hist-select-caixa">Caixa</label>
+        <select id="hist-select-caixa">
+          <option value="">Selecione um caixa</option>
+        </select>
+      </div>
+      <div class="field" id="hist-mes-wrap" style="display:none;">
+        <label for="hist-select-mes">Mês</label>
+        <select id="hist-select-mes">
+          <option value="">Selecione um mês</option>
+        </select>
+      </div>
+
+      <div id="hist-resumo" class="lista hidden"></div>
+      <div id="hist-detalhe-wrap" class="hidden" style="margin-top:14px;">
+        <div class="admin-secao-titulo" id="hist-detalhe-titulo">Detalhe do dia</div>
+        <div id="hist-detalhe" class="lista"></div>
+      </div>
+    </div>
+
+    <button class="btn-ghost" id="btn-sair-admin" style="margin-top:26px;">Sair</button>
+  </section>
+
   <footer>Super José Supermercado &middot; Pix automático</footer>
 </div>
 
@@ -407,13 +592,19 @@
     caixaNome: null,
     externalReference: null,
     pollTimer: null,
+    adminSenha: null,
+    caixasCache: [],
+    histCaixaId: null,
   };
 
   const telas = {
+    inicio: document.getElementById('tela-inicio'),
     login: document.getElementById('tela-login'),
     valor: document.getElementById('tela-valor'),
     qr: document.getElementById('tela-qr'),
     confirmado: document.getElementById('tela-confirmado'),
+    adminLogin: document.getElementById('tela-admin-login'),
+    adminPainel: document.getElementById('tela-admin-painel'),
   };
 
   function mostrarTela(nome){
@@ -422,11 +613,27 @@
   }
 
   function formatarMoeda(valorNumerico){
-    return valorNumerico.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    return Number(valorNumerico).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
   }
 
   // ===================================================================
-  // TELA 1 — Login
+  // TELA 0 — Inicio
+  // ===================================================================
+  document.getElementById('btn-ir-operador').addEventListener('click', () => {
+    mostrarTela('login');
+  });
+  document.getElementById('btn-ir-admin').addEventListener('click', () => {
+    mostrarTela('adminLogin');
+  });
+  document.getElementById('btn-voltar-inicio-1').addEventListener('click', () => {
+    mostrarTela('inicio');
+  });
+  document.getElementById('btn-voltar-inicio-2').addEventListener('click', () => {
+    mostrarTela('inicio');
+  });
+
+  // ===================================================================
+  // TELA 1 — Login do operador
   // ===================================================================
   document.getElementById('btn-login').addEventListener('click', async () => {
     const caixaId = document.getElementById('input-caixa').value.trim();
@@ -470,7 +677,7 @@
     estado.token = null;
     estado.caixaId = null;
     document.getElementById('input-senha').value = '';
-    mostrarTela('login');
+    mostrarTela('inicio');
   });
 
   // ===================================================================
@@ -523,9 +730,6 @@
 
   // ===================================================================
   // TELA 3 — Aguardando pagamento (polling de status)
-  // Obs: quando o webhook do Mercado Pago confirmar, o backend atualiza
-  // o status no banco. Aqui o front so pergunta "ja foi pago?" de tempos
-  // em tempos. (Depois da pra trocar por WebSocket/SSE se quiser tempo real.)
   // ===================================================================
   function iniciarPolling(){
     estado.pollTimer = setInterval(async () => {
@@ -561,6 +765,309 @@
     document.getElementById('input-valor').value = '';
     mostrarTela('valor');
   });
+
+  // ===================================================================
+  // TELA 5 — Login admin
+  // ===================================================================
+  document.getElementById('btn-admin-entrar').addEventListener('click', async () => {
+    const senha = document.getElementById('input-admin-senha').value;
+    const erroEl = document.getElementById('erro-admin-login');
+    erroEl.style.display = 'none';
+
+    if (!senha) {
+      erroEl.textContent = 'Informe a senha de administrador.';
+      erroEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_BASE}/admin/caixas`, {
+        headers: { 'x-admin-senha': senha },
+      });
+
+      if (!resp.ok) {
+        erroEl.textContent = 'Senha incorreta.';
+        erroEl.style.display = 'block';
+        return;
+      }
+
+      estado.adminSenha = senha;
+      document.getElementById('input-admin-senha').value = '';
+      mostrarTela('adminPainel');
+      carregarCaixasAdmin();
+    } catch (e) {
+      erroEl.textContent = 'Erro de conexão com o servidor.';
+      erroEl.style.display = 'block';
+    }
+  });
+
+  document.getElementById('btn-sair-admin').addEventListener('click', () => {
+    estado.adminSenha = null;
+    estado.caixasCache = [];
+    estado.histCaixaId = null;
+    document.getElementById('hist-select-mes').innerHTML = '<option value="">Selecione um mês</option>';
+    document.getElementById('hist-mes-wrap').style.display = 'none';
+    document.getElementById('hist-resumo').classList.add('hidden');
+    document.getElementById('hist-detalhe-wrap').classList.add('hidden');
+    mostrarTela('inicio');
+  });
+
+  function headersAdmin(){
+    return { 'x-admin-senha': estado.adminSenha };
+  }
+
+  // ===================================================================
+  // TELA 6 — Painel admin: criar / listar / desativar caixas
+  // ===================================================================
+  document.getElementById('btn-criar-caixa').addEventListener('click', async () => {
+    const caixaId = document.getElementById('novo-caixa-id').value.trim();
+    const nome = document.getElementById('novo-caixa-nome').value.trim();
+    const senha = document.getElementById('novo-caixa-senha').value;
+    const erroEl = document.getElementById('erro-novo-caixa');
+    const okEl = document.getElementById('ok-novo-caixa');
+    erroEl.style.display = 'none';
+    okEl.style.display = 'none';
+
+    if (!caixaId || !nome || !senha) {
+      erroEl.textContent = 'Preencha número, nome e senha do caixa.';
+      erroEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_BASE}/admin/caixas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headersAdmin() },
+        body: JSON.stringify({ caixaId: Number(caixaId), nome, senha }),
+      });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        erroEl.textContent = data.erro || 'Não foi possível criar o caixa.';
+        erroEl.style.display = 'block';
+        return;
+      }
+
+      okEl.textContent = 'Caixa criado com sucesso.';
+      okEl.style.display = 'block';
+      document.getElementById('novo-caixa-id').value = '';
+      document.getElementById('novo-caixa-nome').value = '';
+      document.getElementById('novo-caixa-senha').value = '';
+      carregarCaixasAdmin();
+    } catch (e) {
+      erroEl.textContent = 'Erro de conexão com o servidor.';
+      erroEl.style.display = 'block';
+    }
+  });
+
+  async function carregarCaixasAdmin(){
+    const listaEl = document.getElementById('lista-caixas');
+    listaEl.innerHTML = '<div class="vazio">Carregando...</div>';
+
+    try {
+      const resp = await fetch(`${API_BASE}/admin/caixas`, { headers: headersAdmin() });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        listaEl.innerHTML = '<div class="vazio">Não foi possível carregar os caixas.</div>';
+        return;
+      }
+
+      estado.caixasCache = data;
+      renderizarListaCaixas(data);
+      renderizarSelectCaixasHistorico(data);
+    } catch (e) {
+      listaEl.innerHTML = '<div class="vazio">Erro de conexão com o servidor.</div>';
+    }
+  }
+
+  function renderizarListaCaixas(caixas){
+    const listaEl = document.getElementById('lista-caixas');
+
+    if (!caixas.length) {
+      listaEl.innerHTML = '<div class="vazio">Nenhum caixa cadastrado ainda.</div>';
+      return;
+    }
+
+    listaEl.innerHTML = '';
+    caixas.forEach(c => {
+      const item = document.createElement('div');
+      item.className = 'lista-item';
+      item.innerHTML = `
+        <div class="info">
+          <span class="principal">${c.nome}</span>
+          <span class="secundario">Caixa ${c.id} · <span class="${c.ativo ? 'tag-ativo' : 'tag-inativo'}">${c.ativo ? 'Ativo' : 'Desativado'}</span></span>
+        </div>
+        ${c.ativo ? `<button class="btn-sm btn-sm-danger" data-desativar="${c.id}">Desativar</button>` : ''}
+      `;
+      listaEl.appendChild(item);
+    });
+
+    listaEl.querySelectorAll('[data-desativar]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-desativar');
+        if (!confirm(`Desativar o caixa ${id}? Ele não vai conseguir mais logar.`)) return;
+
+        try {
+          const resp = await fetch(`${API_BASE}/admin/caixas/${id}`, {
+            method: 'DELETE',
+            headers: headersAdmin(),
+          });
+          if (resp.ok) carregarCaixasAdmin();
+        } catch (e) {
+          alert('Erro de conexão com o servidor.');
+        }
+      });
+    });
+  }
+
+  function renderizarSelectCaixasHistorico(caixas){
+    const select = document.getElementById('hist-select-caixa');
+    const valorAtual = select.value;
+    select.innerHTML = '<option value="">Selecione um caixa</option>';
+    caixas.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = `${c.nome} (Caixa ${c.id})`;
+      select.appendChild(opt);
+    });
+    if (valorAtual) select.value = valorAtual;
+  }
+
+  // ===================================================================
+  // TELA 6 — Painel admin: historico
+  // ===================================================================
+  document.getElementById('hist-select-caixa').addEventListener('change', async (e) => {
+    const caixaId = e.target.value;
+    estado.histCaixaId = caixaId || null;
+
+    document.getElementById('hist-resumo').classList.add('hidden');
+    document.getElementById('hist-detalhe-wrap').classList.add('hidden');
+
+    const mesWrap = document.getElementById('hist-mes-wrap');
+    const mesSelect = document.getElementById('hist-select-mes');
+    mesSelect.innerHTML = '<option value="">Selecione um mês</option>';
+
+    if (!caixaId) {
+      mesWrap.style.display = 'none';
+      return;
+    }
+
+    mesWrap.style.display = 'block';
+
+    try {
+      const resp = await fetch(`${API_BASE}/admin/historico/meses?caixaId=${caixaId}`, { headers: headersAdmin() });
+      const meses = await resp.json();
+
+      if (!resp.ok || !meses.length) {
+        mesSelect.innerHTML = '<option value="">Nenhum Pix registrado ainda</option>';
+        return;
+      }
+
+      meses.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        mesSelect.appendChild(opt);
+      });
+    } catch (e) {
+      mesSelect.innerHTML = '<option value="">Erro ao carregar meses</option>';
+    }
+  });
+
+  document.getElementById('hist-select-mes').addEventListener('change', async (e) => {
+    const mes = e.target.value;
+    const resumoEl = document.getElementById('hist-resumo');
+    document.getElementById('hist-detalhe-wrap').classList.add('hidden');
+
+    if (!mes || !estado.histCaixaId) {
+      resumoEl.classList.add('hidden');
+      return;
+    }
+
+    resumoEl.classList.remove('hidden');
+    resumoEl.innerHTML = '<div class="vazio">Carregando...</div>';
+
+    try {
+      const resp = await fetch(`${API_BASE}/admin/historico/resumo?caixaId=${estado.histCaixaId}&mes=${mes}`, { headers: headersAdmin() });
+      const dias = await resp.json();
+
+      if (!resp.ok || !dias.length) {
+        resumoEl.innerHTML = '<div class="vazio">Nenhum Pix aprovado nesse mês.</div>';
+        return;
+      }
+
+      resumoEl.innerHTML = '';
+      dias.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'lista-item clicavel';
+        item.innerHTML = `
+          <div class="info">
+            <span class="principal">${new Date(d.dia).toLocaleDateString('pt-BR')}</span>
+            <span class="secundario">${d.qtd_pix} Pix</span>
+          </div>
+          <span class="valor-destaque">${formatarMoeda(d.total_recebido)}</span>
+        `;
+        item.addEventListener('click', () => carregarDetalheDia(d.dia));
+        resumoEl.appendChild(item);
+      });
+    } catch (e) {
+      resumoEl.innerHTML = '<div class="vazio">Erro ao carregar resumo.</div>';
+    }
+  });
+
+  async function carregarDetalheDia(dia){
+    const wrap = document.getElementById('hist-detalhe-wrap');
+    const detalheEl = document.getElementById('hist-detalhe');
+    const tituloEl = document.getElementById('hist-detalhe-titulo');
+
+    wrap.classList.remove('hidden');
+    tituloEl.textContent = `Pix de ${new Date(dia).toLocaleDateString('pt-BR')}`;
+    detalheEl.innerHTML = '<div class="vazio">Carregando...</div>';
+
+    try {
+      const resp = await fetch(`${API_BASE}/admin/historico/detalhe?caixaId=${estado.histCaixaId}&dia=${dia}`, { headers: headersAdmin() });
+      const itens = await resp.json();
+
+      if (!resp.ok || !itens.length) {
+        detalheEl.innerHTML = '<div class="vazio">Nenhum Pix encontrado.</div>';
+        return;
+      }
+
+      detalheEl.innerHTML = '';
+      itens.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'lista-item';
+        item.innerHTML = `
+          <div class="info">
+            <span class="principal">${formatarMoeda(p.valor)} <span class="secundario">· ${p.status}</span></span>
+            <span class="secundario">${new Date(p.criado_em).toLocaleTimeString('pt-BR')}</span>
+          </div>
+          <button class="btn-sm btn-sm-danger" data-excluir-pix="${p.id}">Excluir</button>
+        `;
+        detalheEl.appendChild(item);
+      });
+
+      detalheEl.querySelectorAll('[data-excluir-pix]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-excluir-pix');
+          if (!confirm('Excluir esse Pix do histórico? Essa ação não pode ser desfeita.')) return;
+
+          try {
+            const resp = await fetch(`${API_BASE}/admin/pix/${id}`, {
+              method: 'DELETE',
+              headers: headersAdmin(),
+            });
+            if (resp.ok) carregarDetalheDia(dia);
+          } catch (e) {
+            alert('Erro de conexão com o servidor.');
+          }
+        });
+      });
+    } catch (e) {
+      detalheEl.innerHTML = '<div class="vazio">Erro ao carregar detalhe.</div>';
+    }
+  }
 </script>
 </body>
 </html>
