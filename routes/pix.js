@@ -7,7 +7,7 @@ const router = express.Router();
 
 const MP_API = 'https://api.mercadopago.com/v1/payments';
 
-function gerarExternalReference(caixaId) {
+function gerarExternalReference(caixaId, turno) {
   const agora = new Date();
   const yyyy = agora.getFullYear();
   const mm = String(agora.getMonth() + 1).padStart(2, '0');
@@ -15,7 +15,7 @@ function gerarExternalReference(caixaId) {
   const hh = String(agora.getHours()).padStart(2, '0');
   const mi = String(agora.getMinutes()).padStart(2, '0');
   const ss = String(agora.getSeconds()).padStart(2, '0');
-  return `CX${caixaId}-${yyyy}${mm}${dd}-${hh}${mi}${ss}`;
+  return `CX${caixaId}-T${turno}-${yyyy}${mm}${dd}-${hh}${mi}${ss}`;
 }
 
 // ===================================================================
@@ -23,14 +23,18 @@ function gerarExternalReference(caixaId) {
 // Cria a cobranca no Mercado Pago e grava a transacao como 'pendente'
 // ===================================================================
 router.post('/gerar', async (req, res) => {
-  const { valor } = req.body;
+  const { valor, turno } = req.body;
   const caixaId = req.caixa.id;
 
   if (!valor || isNaN(valor) || valor <= 0) {
     return res.status(400).json({ erro: 'Valor invalido' });
   }
 
-  const externalReference = gerarExternalReference(caixaId);
+  if (turno !== '1' && turno !== '2') {
+    return res.status(400).json({ erro: 'Turno invalido. Selecione 1 ou 2.' });
+  }
+
+  const externalReference = gerarExternalReference(caixaId, turno);
 
   try {
     const mpResp = await fetch(MP_API, {
@@ -62,6 +66,7 @@ router.post('/gerar', async (req, res) => {
 
     const { error } = await supabase.from('transacoes_pix').insert({
       caixa_id: caixaId,
+      turno,
       valor: Number(valor),
       mp_chave_pix_destino: process.env.MP_CHAVE_PIX,
       external_reference: externalReference,
