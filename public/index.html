@@ -528,10 +528,6 @@
         <input id="novo-caixa-id" type="number" inputmode="numeric" placeholder="Ex: 12" />
       </div>
       <div class="field">
-        <label for="novo-caixa-nome">Nome</label>
-        <input id="novo-caixa-nome" type="text" placeholder="Ex: Caixa 12" />
-      </div>
-      <div class="field">
         <label for="novo-caixa-senha">Senha</label>
         <input id="novo-caixa-senha" type="password" placeholder="••••••" />
       </div>
@@ -821,15 +817,14 @@
   // ===================================================================
   document.getElementById('btn-criar-caixa').addEventListener('click', async () => {
     const caixaId = document.getElementById('novo-caixa-id').value.trim();
-    const nome = document.getElementById('novo-caixa-nome').value.trim();
     const senha = document.getElementById('novo-caixa-senha').value;
     const erroEl = document.getElementById('erro-novo-caixa');
     const okEl = document.getElementById('ok-novo-caixa');
     erroEl.style.display = 'none';
     okEl.style.display = 'none';
 
-    if (!caixaId || !nome || !senha) {
-      erroEl.textContent = 'Preencha número, nome e senha do caixa.';
+    if (!caixaId || !senha) {
+      erroEl.textContent = 'Preencha número e senha do caixa.';
       erroEl.style.display = 'block';
       return;
     }
@@ -838,7 +833,7 @@
       const resp = await fetch(`${API_BASE}/admin/caixas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headersAdmin() },
-        body: JSON.stringify({ caixaId: Number(caixaId), nome, senha }),
+        body: JSON.stringify({ caixaId: Number(caixaId), senha }),
       });
       const data = await resp.json();
 
@@ -851,7 +846,6 @@
       okEl.textContent = 'Caixa criado com sucesso.';
       okEl.style.display = 'block';
       document.getElementById('novo-caixa-id').value = '';
-      document.getElementById('novo-caixa-nome').value = '';
       document.getElementById('novo-caixa-senha').value = '';
       carregarCaixasAdmin();
     } catch (e) {
