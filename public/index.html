@@ -449,6 +449,25 @@
     <button class="btn-ghost" id="btn-voltar-inicio-1">Voltar</button>
   </section>
 
+  <!-- ============ TELA 1.5: SELECAO DE TURNO ============ -->
+  <section id="tela-turno" class="card hidden">
+    <span class="caixa-tag"><span class="dot"></span><span id="tag-caixa-nome-turno">Caixa 12</span></span>
+    <h1>Qual turno você está?</h1>
+    <p class="subtitle">Os Pix gerados agora ficam registrados neste turno.</p>
+
+    <div class="opcoes-inicio">
+      <button class="btn-outline" id="btn-turno-1">
+        <span>1º Turno</span>
+        <span class="arrow">›</span>
+      </button>
+      <button class="btn-outline" id="btn-turno-2">
+        <span>2º Turno</span>
+        <span class="arrow">›</span>
+      </button>
+    </div>
+    <button class="btn-ghost" id="btn-voltar-login" style="margin-top:12px;">Voltar</button>
+  </section>
+
   <!-- ============ TELA 2: VALOR DA COMPRA ============ -->
   <section id="tela-valor" class="card hidden">
     <span class="caixa-tag"><span class="dot"></span><span id="tag-caixa-nome">Caixa 12</span></span>
@@ -586,6 +605,7 @@
     token: null,
     caixaId: null,
     caixaNome: null,
+    turno: null,
     externalReference: null,
     pollTimer: null,
     adminSenha: null,
@@ -596,6 +616,7 @@
   const telas = {
     inicio: document.getElementById('tela-inicio'),
     login: document.getElementById('tela-login'),
+    turno: document.getElementById('tela-turno'),
     valor: document.getElementById('tela-valor'),
     qr: document.getElementById('tela-qr'),
     confirmado: document.getElementById('tela-confirmado'),
@@ -661,17 +682,34 @@
       estado.caixaId = data.caixa.id;
       estado.caixaNome = data.caixa.nome;
 
-      document.getElementById('tag-caixa-nome').textContent = estado.caixaNome;
-      mostrarTela('valor');
+      document.getElementById('tag-caixa-nome-turno').textContent = estado.caixaNome;
+      mostrarTela('turno');
     } catch (e) {
       erroEl.textContent = 'Erro de conexão com o servidor.';
       erroEl.style.display = 'block';
     }
   });
 
+  document.getElementById('btn-voltar-login').addEventListener('click', () => {
+    mostrarTela('login');
+  });
+
+  // ===================================================================
+  // TELA 1.5 — Selecao de turno
+  // ===================================================================
+  function selecionarTurno(turno){
+    estado.turno = turno;
+    document.getElementById('tag-caixa-nome').textContent =
+      `${estado.caixaNome} · ${turno}º turno`;
+    mostrarTela('valor');
+  }
+  document.getElementById('btn-turno-1').addEventListener('click', () => selecionarTurno('1'));
+  document.getElementById('btn-turno-2').addEventListener('click', () => selecionarTurno('2'));
+
   document.getElementById('btn-logout').addEventListener('click', () => {
     estado.token = null;
     estado.caixaId = null;
+    estado.turno = null;
     document.getElementById('input-senha').value = '';
     mostrarTela('inicio');
   });
@@ -698,7 +736,7 @@
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${estado.token}`,
         },
-        body: JSON.stringify({ valor }),
+        body: JSON.stringify({ valor, turno: estado.turno }),
       });
       const data = await resp.json();
 
