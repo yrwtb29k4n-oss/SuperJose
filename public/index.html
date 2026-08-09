@@ -475,7 +475,7 @@
     <p class="subtitle">Digite o valor para gerar o Pix.</p>
 
     <div class="field">
-      <input id="input-valor" class="valor-input" type="text" inputmode="decimal" placeholder="R$ 0,00" />
+      <input id="input-valor" class="valor-input" type="text" inputmode="numeric" placeholder="R$ 0,00" />
     </div>
     <div id="erro-valor" class="erro">Informe um valor válido.</div>
 
@@ -606,6 +606,7 @@
     caixaId: null,
     caixaNome: null,
     turno: null,
+    valorCentavos: 0,
     externalReference: null,
     pollTimer: null,
     adminSenha: null,
@@ -632,6 +633,18 @@
   function formatarMoeda(valorNumerico){
     return Number(valorNumerico).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
   }
+
+  // ===================================================================
+  // Mascara de valor: digita so numeros, o campo formata sozinho como
+  // dinheiro (os digitos entram da direita pra esquerda, tipo maquininha).
+  // estado.valorCentavos é a fonte da verdade — é o que vai pro backend.
+  // ===================================================================
+  const inputValor = document.getElementById('input-valor');
+  inputValor.addEventListener('input', (e) => {
+    const somenteDigitos = e.target.value.replace(/\D/g, '');
+    estado.valorCentavos = somenteDigitos ? parseInt(somenteDigitos, 10) : 0;
+    e.target.value = estado.valorCentavos > 0 ? formatarMoeda(estado.valorCentavos / 100) : '';
+  });
 
   // ===================================================================
   // TELA 0 — Inicio
@@ -710,7 +723,9 @@
     estado.token = null;
     estado.caixaId = null;
     estado.turno = null;
+    estado.valorCentavos = 0;
     document.getElementById('input-senha').value = '';
+    document.getElementById('input-valor').value = '';
     mostrarTela('inicio');
   });
 
@@ -718,8 +733,9 @@
   // TELA 2 — Gerar cobrança
   // ===================================================================
   document.getElementById('btn-gerar').addEventListener('click', async () => {
-    const bruto = document.getElementById('input-valor').value.replace(',', '.').replace(/[^\d.]/g, '');
-    const valor = parseFloat(bruto);
+    // valorCentavos é inteiro (nunca ponto flutuante) — evita erro de
+    // arredondamento. O valor em reais so eh calculado aqui, na hora de enviar.
+    const valor = Number((estado.valorCentavos / 100).toFixed(2));
     const erroEl = document.getElementById('erro-valor');
     erroEl.style.display = 'none';
 
@@ -797,6 +813,7 @@
   // ===================================================================
   document.getElementById('btn-novo').addEventListener('click', () => {
     document.getElementById('input-valor').value = '';
+    estado.valorCentavos = 0;
     mostrarTela('valor');
   });
 
