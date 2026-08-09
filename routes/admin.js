@@ -117,3 +117,4 @@ router.delete('/pix/:id', async (req, res) => {
 });
 
 module.exports = router;
+
