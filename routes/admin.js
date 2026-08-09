@@ -4,9 +4,7 @@ const supabase = require('../db/supabase');
 
 const router = express.Router();
 
-// ===================================================================
-// GET /admin/caixas — lista todos os caixas (ativos e desativados)
-// ===================================================================
+// GET /admin/caixas
 router.get('/caixas', async (req, res) => {
   const { data, error } = await supabase
     .from('caixas')
@@ -17,10 +15,7 @@ router.get('/caixas', async (req, res) => {
   return res.json(data);
 });
 
-// ===================================================================
-// POST /admin/caixas — cria um novo caixa
-// body: { caixaId, nome, senha }
-// ===================================================================
+// POST /admin/caixas  { caixaId, nome, senha }
 router.post('/caixas', async (req, res) => {
   const { caixaId, nome, senha } = req.body;
 
@@ -40,10 +35,7 @@ router.post('/caixas', async (req, res) => {
   return res.status(201).json(data);
 });
 
-// ===================================================================
-// DELETE /admin/caixas/:id — desativa um caixa (soft delete)
-// Mantem o historico de Pix intacto; o caixa so deixa de conseguir logar.
-// ===================================================================
+// DELETE /admin/caixas/:id — soft delete
 router.delete('/caixas/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -56,73 +48,51 @@ router.delete('/caixas/:id', async (req, res) => {
   return res.json({ ok: true, mensagem: `Caixa ${id} desativado.` });
 });
 
-// ===================================================================
-// GET /admin/historico/meses?caixaId=12&turno=1
-// Lista os meses (YYYY-MM) que tem algum Pix registrado, pra popular o filtro
-// ===================================================================
+// GET /admin/historico/meses?caixaId=12
 router.get('/historico/meses', async (req, res) => {
-  const { caixaId, turno } = req.query;
-
-  if (!caixaId || !turno) {
-    return res.status(400).json({ erro: 'caixaId e turno são obrigatórios' });
-  }
+  const { caixaId } = req.query;
+  if (!caixaId) return res.status(400).json({ erro: 'caixaId é obrigatório' });
 
   const { data, error } = await supabase
-    .from('transacoes_pix')
-    .select('criado_em')
+    .from('vw_totais_pix_mes')
+    .select('mes')
     .eq('caixa_id', caixaId)
-    .eq('turno', turno)
-    .order('criado_em', { ascending: false });
+    .order('mes', { ascending: false });
 
   if (error) return res.status(500).json({ erro: error.message });
-
-  const meses = [...new Set(
-    data.map(row => row.criado_em.slice(0, 7)) // "YYYY-MM"
-  )];
-
-  return res.json(meses);
+  return res.json([...new Set(data.map(r => r.mes))]);
 });
 
-// ===================================================================
-// GET /admin/historico/resumo?caixaId=12&turno=1&mes=2026-08
-// Totais por dia dentro do mes/turno selecionado (usa a view do banco)
-// ===================================================================
+// GET /admin/historico/resumo?caixaId=12&mes=2026-08
 router.get('/historico/resumo', async (req, res) => {
-  const { caixaId, turno, mes } = req.query;
-
-  if (!caixaId || !turno || !mes) {
-    return res.status(400).json({ erro: 'caixaId, turno e mes são obrigatórios' });
+  const { caixaId, mes } = req.query;
+  if (!caixaId || !mes) {
+    return res.status(400).json({ erro: 'caixaId e mes são obrigatórios' });
   }
 
   const { data, error } = await supabase
-    .from('vw_historico_caixa_turno_dia')
+    .from('vw_totais_pix_dia')
     .select('*')
     .eq('caixa_id', caixaId)
-    .eq('turno', turno)
     .gte('dia', `${mes}-01`)
-    .lt('dia', `${mes}-32`) // truque simples: qualquer dia do mes cai antes do dia 32
+    .lt('dia', `${mes}-32`)
     .order('dia', { ascending: false });
 
   if (error) return res.status(500).json({ erro: error.message });
   return res.json(data);
 });
 
-// ===================================================================
-// GET /admin/historico/detalhe?caixaId=12&turno=1&dia=2026-08-08
-// Lista cada Pix individual daquele caixa/turno/dia (para poder deletar um a um)
-// ===================================================================
+// GET /admin/historico/detalhe?caixaId=12&dia=2026-08-08
 router.get('/historico/detalhe', async (req, res) => {
-  const { caixaId, turno, dia } = req.query;
-
-  if (!caixaId || !turno || !dia) {
-    return res.status(400).json({ erro: 'caixaId, turno e dia são obrigatórios' });
+  const { caixaId, dia } = req.query;
+  if (!caixaId || !dia) {
+    return res.status(400).json({ erro: 'caixaId e dia são obrigatórios' });
   }
 
   const { data, error } = await supabase
     .from('transacoes_pix')
     .select('id, valor, status, criado_em, pago_em, mp_payment_id, external_reference')
     .eq('caixa_id', caixaId)
-    .eq('turno', turno)
     .gte('criado_em', `${dia}T00:00:00`)
     .lte('criado_em', `${dia}T23:59:59`)
     .order('criado_em', { ascending: false });
@@ -131,9 +101,7 @@ router.get('/historico/detalhe', async (req, res) => {
   return res.json(data);
 });
 
-// ===================================================================
-// DELETE /admin/pix/:id — apaga um Pix especifico
-// ===================================================================
+// DELETE /admin/pix/:id
 router.delete('/pix/:id', async (req, res) => {
   const { id } = req.params;
 
