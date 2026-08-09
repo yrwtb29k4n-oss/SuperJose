@@ -5,12 +5,16 @@ const supabase = require('../db/supabase');
 
 const router = express.Router();
 
-// POST /auth/login  { caixaId: 12, senha: "1234" }
+// POST /auth/login  { caixaId: 12, senha: "1234", turno: 1 }
 router.post('/login', async (req, res) => {
-  const { caixaId, senha } = req.body;
+  const { caixaId, senha, turno } = req.body;
 
-  if (!caixaId || !senha) {
-    return res.status(400).json({ erro: 'caixaId e senha são obrigatórios' });
+  if (!caixaId || !senha || !turno) {
+    return res.status(400).json({ erro: 'caixaId, senha e turno são obrigatórios' });
+  }
+
+  if (![1, 2].includes(Number(turno))) {
+    return res.status(400).json({ erro: 'Turno deve ser 1 ou 2' });
   }
 
   const { data: caixa, error } = await supabase
@@ -33,12 +37,15 @@ router.post('/login', async (req, res) => {
   }
 
   const token = jwt.sign(
-    { caixaId: caixa.id, nome: caixa.nome },
+    { caixaId: caixa.id, nome: caixa.nome, turno: Number(turno) },
     process.env.JWT_SECRET,
     { expiresIn: '12h' }
   );
 
-  return res.json({ token, caixa: { id: caixa.id, nome: caixa.nome } });
+  return res.json({
+    token,
+    caixa: { id: caixa.id, nome: caixa.nome, turno: Number(turno) },
+  });
 });
 
 module.exports = router;
