@@ -1,0 +1,19 @@
+{
+  "name": "sistema-pix-caixa",
+  "version": "0.1.0",
+  "description": "Backend para geracao de cobranca Pix por caixa via Mercado Pago, com identificacao automatica do caixa e webhook de confirmacao. Banco de dados: Supabase (Postgres).",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^2.7.0"
+  }
+}
