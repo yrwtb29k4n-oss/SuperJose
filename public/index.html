@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -388,6 +389,71 @@
     color:#B0B4BC;
     margin-top:20px;
   }
+  /* =====================================================================
+     Area de impressao — invisivel na tela, so existe pro cupom termico.
+     ===================================================================== */
+  #area-impressao{
+    display: none;
+  }
+
+  @media print {
+    /* Esconde TUDO da tela normal na hora de imprimir */
+    body > *:not(#area-impressao){
+      display: none !important;
+    }
+    #area-impressao{
+      display: block !important;
+      width: 72mm; /* cabe em bobina de 80mm com margem de seguranca */
+      font-family: 'Courier New', monospace;
+      color: #000;
+    }
+    @page{
+      size: 80mm auto;
+      margin: 2mm;
+    }
+    .cupom-loja{
+      text-align: center;
+      font-weight: bold;
+      font-size: 14pt;
+      margin-bottom: 2mm;
+    }
+    .cupom-titulo{
+      text-align: center;
+      font-weight: bold;
+      font-size: 16pt;
+      margin: 2mm 0;
+    }
+    .cupom-linha-dupla{
+      text-align: center;
+      font-size: 10pt;
+      letter-spacing: -1px;
+      margin: 1mm 0;
+    }
+    .cupom-caixa{
+      text-align: center;
+      font-weight: bold;
+      font-size: 22pt;
+      margin: 2mm 0 0 0;
+    }
+    .cupom-turno{
+      text-align: center;
+      font-weight: bold;
+      font-size: 16pt;
+      margin-bottom: 2mm;
+    }
+    .cupom-valor{
+      text-align: center;
+      font-weight: bold;
+      font-size: 26pt;
+      margin: 2mm 0;
+    }
+    .cupom-info{
+      display: flex;
+      justify-content: space-between;
+      font-size: 11pt;
+      margin: 1mm 0;
+    }
+  }
 </style>
 </head>
 <body>
@@ -505,7 +571,7 @@
       </svg>
     </div>
     <div class="confirmado-titulo">Pagamento confirmado</div>
-    <div class="confirmado-sub">O comprovante já foi enviado para a impressora.</div>
+    <div class="confirmado-sub">Confirme a impressão do comprovante na caixa de diálogo.</div>
 
     <div class="comprovante">
       <div class="comprovante-linha"><span>Caixa</span><span id="rec-caixa">—</span></div>
@@ -517,6 +583,26 @@
     <button class="btn" id="btn-novo">Novo pagamento</button>
     <button class="btn-ghost" id="btn-reimprimir">Reimprimir comprovante</button>
   </section>
+
+  <!-- ============ AREA DE IMPRESSAO ============
+       Fica invisivel na tela normal — so aparece quando o navegador
+       manda pra impressora (window.print()), via @media print no CSS.
+       E' isso que sai fisicamente no cupom termico. -->
+  <div id="area-impressao">
+    <div class="cupom-loja">SUPER JOSE SUPERMERCADO</div>
+    <div class="cupom-linha-dupla">================================</div>
+    <div class="cupom-titulo">PIX CONFIRMADO</div>
+    <div class="cupom-linha-dupla">================================</div>
+    <div class="cupom-caixa" id="print-caixa">Caixa —</div>
+    <div class="cupom-turno" id="print-turno">— turno</div>
+    <div class="cupom-linha-dupla">--------------------------------</div>
+    <div class="cupom-valor" id="print-valor">R$ 0,00</div>
+    <div class="cupom-linha-dupla">--------------------------------</div>
+    <div class="cupom-info"><span>Data:</span><span id="print-data">—</span></div>
+    <div class="cupom-info"><span>Horário:</span><span id="print-hora">—</span></div>
+    <div class="cupom-info"><span>ID Mercado Pago:</span><span id="print-id">—</span></div>
+    <div class="cupom-linha-dupla">================================</div>
+  </div>
 
   <!-- ============ TELA 5: LOGIN ADMIN ============ -->
   <section id="tela-admin-login" class="card hidden">
@@ -825,22 +911,19 @@
   }
 
   // ===================================================================
-  // Impressao automatica — chama o agente local (roda no mesmo PC do
-  // caixa, na porta 9123). Se o agente nao estiver ligado, so avisa no
-  // console — a tela de confirmacao ja apareceu e nao depende disso.
+  // Impressao — preenche a area escondida (#area-impressao) com os
+  // dados do comprovante e abre o dialogo de impressao do navegador.
+  // Funciona com qualquer impressora ja instalada no Windows, termica
+  // ou nao — nao precisa de nenhum programa rodando no PC.
   // ===================================================================
-  const AGENTE_IMPRESSAO_URL = 'http://127.0.0.1:9123/imprimir';
-
-  async function imprimirComprovante(dados){
-    try {
-      await fetch(AGENTE_IMPRESSAO_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados),
-      });
-    } catch (e) {
-      console.warn('Agente de impressao nao respondeu (ele esta ligado neste PC?).', e);
-    }
+  function imprimirComprovante(dados){
+    document.getElementById('print-caixa').textContent = dados.caixaNome;
+    document.getElementById('print-turno').textContent = `${dados.turno}º TURNO`;
+    document.getElementById('print-valor').textContent = formatarMoeda(dados.valor);
+    document.getElementById('print-data').textContent = dados.data;
+    document.getElementById('print-hora').textContent = dados.horario;
+    document.getElementById('print-id').textContent = dados.id;
+    window.print();
   }
 
   // ===================================================================
@@ -852,16 +935,9 @@
     mostrarTela('valor');
   });
 
-  document.getElementById('btn-reimprimir').addEventListener('click', (e) => {
+  document.getElementById('btn-reimprimir').addEventListener('click', () => {
     if (!estado.ultimoComprovante) return;
-    const botao = e.target;
-    const textoOriginal = botao.textContent;
-    botao.textContent = 'Imprimindo...';
-    botao.disabled = true;
-    imprimirComprovante(estado.ultimoComprovante).finally(() => {
-      botao.textContent = textoOriginal;
-      botao.disabled = false;
-    });
+    imprimirComprovante(estado.ultimoComprovante);
   });
 
   // ===================================================================
