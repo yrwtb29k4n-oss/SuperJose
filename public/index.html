@@ -5,36 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 <title>Super José Supermercado — Terminal Pix</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* =====================================================================
-     TOKENS
-     Terminal de caixa (maquininha) e nao um site — a tela toda e o
-     "visor". Fundo grafite (nao preto puro), um unico acento (o verde-
-     piscina do Pix) reservado pra "confirmar/avancar", e ambar pra area
-     administrativa. Tecla ENTER e sempre a mesma cor em todo o sistema:
-     e o unico jeito de "seguir em frente".
+     Design tokens — fundo branco, azul royal como unico acento, Inter.
      ===================================================================== */
   :root{
-    --bg:        #14171A;
-    --bg-elev:   #191D21;
-    --panel:     #1E2226;
-    --panel-2:   #23282D;
-    --line:      #2C3238;
-    --line-soft: #23282D;
-    --ink:       #EFF2F1;
-    --ink-dim:   #939CA1;
-    --ink-faint: #565E63;
+    --bg:        #FFFFFF;
+    --bg-elev:   #FFFFFF;
+    --panel:     #F7F8FA;
+    --panel-2:   #F0F2F5;
+    --line:      #E5E7EB;
+    --line-soft: #EDEEF1;
+    --ink:       #0B0E14;
+    --ink-dim:   #6B7280;
+    --ink-faint: #9CA3AF;
 
-    --pix:       #2FBFAE;
-    --pix-ink:   #08201C;
-    --pix-dim:   rgba(47,191,174,0.13);
+    --blue:      #2A4CFF;
+    --blue-ink:  #FFFFFF;
+    --blue-dim:  rgba(42,76,255,0.08);
+    --blue-line: rgba(42,76,255,0.28);
 
-    --amber:     #E3A23C;
-    --amber-dim: rgba(227,162,60,0.13);
-
-    --danger:    #E2565C;
-    --danger-dim:rgba(226,86,92,0.13);
+    --danger:    #DC2626;
+    --danger-dim:rgba(220,38,38,0.08);
 
     --r-sm: 6px;
     --r-md: 10px;
@@ -45,39 +39,35 @@
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    font-family:'Inter', system-ui, sans-serif;
     -webkit-font-smoothing:antialiased;
     height:100vh;
     overflow:hidden;
     display:flex;
     flex-direction:column;
   }
-  .mono{ font-family:'IBM Plex Mono', monospace; }
-  ::selection{ background:var(--pix-dim); }
+  .mono{ font-variant-numeric:tabular-nums; font-feature-settings:'tnum'; }
+  ::selection{ background:var(--blue-dim); }
 
   input{ font-family:inherit; color:inherit; }
   input:focus{ outline:none; }
   button{ font-family:inherit; cursor:pointer; }
 
-  /* ---------- Barra superior: marca + posicao atual ---------- */
+  /* ---------- Barra superior ---------- */
   .topbar{
     flex:0 0 auto;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:14px 22px;
-    border-bottom:1px solid var(--line-soft);
+    padding:16px 24px;
+    border-bottom:1px solid var(--line);
     background:var(--bg-elev);
   }
-  .marca{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
+  .marca{ display:flex; align-items:center; gap:10px; }
   .marca-icone{
-    width:26px; height:26px;
+    width:22px; height:22px;
     display:flex; align-items:center; justify-content:center;
-    color:var(--pix);
+    color:var(--blue);
     flex-shrink:0;
   }
   .marca-icone svg{ width:100%; height:100%; }
@@ -85,6 +75,7 @@
     font-size:13px;
     font-weight:600;
     letter-spacing:-0.01em;
+    color:var(--ink);
   }
   .marca-texto small{
     display:block;
@@ -94,15 +85,14 @@
     letter-spacing:0.02em;
   }
   .trilha{
-    font-family:'IBM Plex Mono', monospace;
     font-size:11px;
+    font-weight:600;
     letter-spacing:0.06em;
     color:var(--ink-faint);
     text-transform:uppercase;
   }
-  .trilha b{ color:var(--ink-dim); }
 
-  /* ---------- Palco (onde as telas aparecem) ---------- */
+  /* ---------- Palco ---------- */
   .palco{
     flex:1 1 auto;
     display:flex;
@@ -112,162 +102,139 @@
     overflow-y:auto;
     min-height:0;
   }
-  .tela{
-    width:100%;
-    max-width:460px;
-  }
+  .tela{ width:100%; max-width:440px; }
   .tela.hidden{ display:none; }
 
   .rotulo{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px;
+    font-size:11px;
     font-weight:600;
-    color:var(--pix);
+    color:var(--blue);
     text-transform:uppercase;
-    letter-spacing:0.1em;
+    letter-spacing:0.08em;
     margin-bottom:10px;
   }
-  .rotulo.amb{ color:var(--amber); }
+  .rotulo.amb{ color:var(--ink-faint); }
   h1{
-    font-size:21px;
+    font-size:20px;
     font-weight:600;
     letter-spacing:-0.01em;
-    margin-bottom:6px;
+    margin-bottom:20px;
+    color:var(--ink);
   }
+  h1:has(+ .sub){ margin-bottom:6px; }
   .sub{
-    font-size:13.5px;
+    font-size:13px;
     color:var(--ink-dim);
     line-height:1.5;
-    margin-bottom:22px;
+    margin-bottom:20px;
   }
 
-  /* ---------- Tecla: o elemento assinatura do sistema ----------
-     Toda acao possivel na tela mostra a tecla fisica que aciona ela.
-     Visual de tecla de verdade: bisel, sombra interna, "afunda" ao
-     ser pressionada. */
+  /* ---------- Tecla: indicador de atalho, plano e minimalista ---------- */
   .tecla{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    min-width:28px;
-    height:28px;
-    padding:0 8px;
-    border-radius:7px;
-    background:linear-gradient(180deg,#2A3036,#1E2327);
-    border:1px solid #363D43;
-    border-bottom:2px solid #101315;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:700;
-    font-size:13px;
-    color:var(--ink);
+    min-width:24px;
+    height:24px;
+    padding:0 7px;
+    border-radius:6px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    font-weight:600;
+    font-size:12px;
+    color:var(--ink-dim);
     flex-shrink:0;
-    transition:transform .04s ease, border-bottom-width .04s ease;
+    transition:opacity .04s ease;
   }
-  .tecla.grande{ min-width:34px; height:34px; font-size:14px; border-radius:8px; }
+  .tecla.grande{ min-width:30px; height:30px; font-size:13px; border-radius:7px; }
   .tecla.ir{
-    background:linear-gradient(180deg,#3AD6C3,#26A392);
-    border-color:#1E8577;
-    border-bottom-color:#125046;
-    color:var(--pix-ink);
+    background:var(--blue);
+    border-color:var(--blue);
+    color:var(--blue-ink);
   }
-  .tecla.pressed{ transform:translateY(1px); border-bottom-width:1px; }
+  .tecla.pressed{ opacity:.6; }
 
-  /* ---------- Opcao (linha de escolha numerada) ---------- */
-  .opcoes{ display:flex; flex-direction:column; gap:10px; }
+  /* ---------- Opcao ---------- */
+  .opcoes{ display:flex; flex-direction:column; gap:8px; }
   .opcao{
     width:100%;
     display:flex;
     align-items:center;
     gap:14px;
-    padding:16px;
+    padding:15px 16px;
     border:1px solid var(--line);
     border-radius:var(--r-md);
-    background:var(--panel);
+    background:var(--bg);
     color:var(--ink);
     text-align:left;
+    transition:border-color .1s ease;
   }
-  .opcao:active{ background:var(--panel-2); }
+  .opcao:active{ background:var(--panel); }
   .opcao .icone{
-    width:30px; height:30px;
+    width:26px; height:26px;
     flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
-    color:var(--ink-dim);
+    color:var(--ink-faint);
   }
   .opcao .icone svg{ width:100%; height:100%; }
   .opcao .texto{ flex:1; min-width:0; }
-  .opcao .titulo{ font-size:14.5px; font-weight:600; }
-  .opcao .desc{ font-size:12px; color:var(--ink-dim); margin-top:2px; }
+  .opcao .titulo{ font-size:14px; font-weight:500; }
+  .opcao .desc{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
   .opcao .tag{ font-size:11px; font-weight:600; padding:2px 8px; border-radius:100px; }
-  .opcao .tag.ok{ color:var(--pix); background:var(--pix-dim); }
+  .opcao .tag.ok{ color:var(--blue); background:var(--blue-dim); }
   .opcao .tag.off{ color:var(--danger); background:var(--danger-dim); }
 
-  /* ---------- Painel de entrada inicial: dois blocos simetricos ---------- */
-  .grade-inicio{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-  }
-  @media (max-width:520px){
-    .grade-inicio{ grid-template-columns:1fr; }
-  }
+  /* ---------- Painel de entrada inicial ---------- */
+  .grade-inicio{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .grade-inicio{ grid-template-columns:1fr; } }
   .bloco-inicio{
     display:flex;
     flex-direction:column;
     align-items:center;
     text-align:center;
-    gap:12px;
-    padding:28px 18px;
+    gap:10px;
+    padding:26px 16px;
     border:1px solid var(--line);
     border-radius:var(--r-lg);
-    background:var(--panel);
+    background:var(--bg);
     color:var(--ink);
-    min-height:190px;
+    min-height:170px;
     justify-content:center;
   }
-  .bloco-inicio .icone{
-    width:34px; height:34px;
-    color:var(--ink-dim);
-  }
+  .bloco-inicio .icone{ width:28px; height:28px; color:var(--ink-faint); }
   .bloco-inicio .icone svg{ width:100%; height:100%; }
-  .bloco-inicio .titulo{ font-size:15px; font-weight:600; }
-  .bloco-inicio .desc{ font-size:12px; color:var(--ink-dim); line-height:1.4; }
-  .bloco-inicio.admin .icone{ color:var(--amber); }
+  .bloco-inicio .titulo{ font-size:14px; font-weight:600; }
+  .bloco-inicio .desc{ font-size:11.5px; color:var(--ink-faint); line-height:1.4; }
+  .bloco-inicio.admin .icone{ color:var(--ink-faint); }
 
-  /* ---------- Entrada numerica (visor grande) ---------- */
+  /* ---------- Entrada numerica ---------- */
   .visor{
     border:1px solid var(--line);
     border-radius:var(--r-md);
     background:var(--panel);
-    padding:20px;
+    padding:18px;
     margin-bottom:14px;
   }
   .visor input{
     width:100%;
     border:none;
     background:transparent;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:34px;
+    font-size:32px;
     font-weight:600;
-    letter-spacing:0.02em;
+    letter-spacing:0.01em;
     text-align:center;
     color:var(--ink);
   }
   .visor input::placeholder{ color:var(--ink-faint); }
   .visor input.senha-dots{ letter-spacing:0.3em; }
 
-  .dica{
-    font-size:12px;
-    color:var(--ink-faint);
-    text-align:center;
-    margin-bottom:18px;
-  }
+  .dica{ font-size:12px; color:var(--ink-faint); text-align:center; margin-bottom:18px; }
   .erro-box{
     display:none;
     font-size:13px;
     color:var(--danger);
     background:var(--danger-dim);
-    border:1px solid rgba(226,86,92,0.3);
+    border:1px solid rgba(220,38,38,0.2);
     border-radius:var(--r-sm);
     padding:10px 12px;
     margin-bottom:16px;
@@ -275,9 +242,9 @@
   .ok-box{
     display:none;
     font-size:13px;
-    color:var(--pix);
-    background:var(--pix-dim);
-    border:1px solid rgba(47,191,174,0.3);
+    color:var(--blue);
+    background:var(--blue-dim);
+    border:1px solid var(--blue-line);
     border-radius:var(--r-sm);
     padding:10px 12px;
     margin-bottom:16px;
@@ -288,40 +255,26 @@
     display:inline-flex;
     align-items:center;
     gap:7px;
-    font-family:'IBM Plex Mono', monospace;
     font-size:11.5px;
     font-weight:600;
-    color:var(--pix);
-    background:var(--pix-dim);
+    color:var(--blue);
+    background:var(--blue-dim);
     padding:5px 10px;
     border-radius:100px;
     margin-bottom:18px;
   }
-  .etiqueta .ponto{ width:6px; height:6px; border-radius:50%; background:var(--pix); }
+  .etiqueta .ponto{ width:6px; height:6px; border-radius:50%; background:var(--blue); }
 
   /* ---------- QR ---------- */
   .qr-area{ display:flex; flex-direction:column; align-items:center; text-align:center; }
   .qr-caixa{
-    width:216px; height:216px;
+    width:208px; height:208px;
     border-radius:var(--r-md);
     background:#fff;
+    border:1px solid var(--line);
     padding:10px;
     display:flex; align-items:center; justify-content:center;
     margin-bottom:18px;
-    position:relative;
-  }
-  .qr-caixa::after{
-    content:'';
-    position:absolute; inset:-1px;
-    border-radius:var(--r-md);
-    border:2px solid var(--pix);
-    opacity:0.4;
-    animation:respirar 1.8s ease-in-out infinite;
-  }
-  @keyframes respirar{
-    0%{ transform:scale(1); opacity:.55; }
-    70%{ transform:scale(1.045); opacity:0; }
-    100%{ opacity:0; }
   }
   .qr-caixa img{ width:100%; height:100%; object-fit:contain; }
   .status-espera{
@@ -330,29 +283,23 @@
     margin-bottom:6px;
   }
   .status-espera .ponto{
-    width:6px; height:6px; border-radius:50%; background:var(--pix);
+    width:6px; height:6px; border-radius:50%; background:var(--blue);
     animation:piscar 1.3s ease-in-out infinite;
   }
   @keyframes piscar{ 0%,100%{opacity:1;} 50%{opacity:.2;} }
-  .valor-grande{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:30px; font-weight:600;
-    margin:10px 0 6px;
-  }
-  .qr-instrucao{
-    font-size:12px; color:var(--ink-faint); max-width:280px; line-height:1.5;
-  }
+  .valor-grande{ font-size:28px; font-weight:600; margin:10px 0 6px; }
+  .qr-instrucao{ font-size:12px; color:var(--ink-faint); max-width:280px; line-height:1.5; }
 
   /* ---------- Confirmado ---------- */
   .marca-check{
-    width:56px; height:56px; border-radius:50%;
-    background:var(--pix-dim);
+    width:52px; height:52px; border-radius:50%;
+    background:var(--blue-dim);
     display:flex; align-items:center; justify-content:center;
     margin:0 auto 16px;
-    color:var(--pix);
+    color:var(--blue);
   }
-  .marca-check svg{ width:26px; height:26px; }
-  .titulo-central{ text-align:center; font-size:18px; font-weight:600; margin-bottom:4px; }
+  .marca-check svg{ width:24px; height:24px; }
+  .titulo-central{ text-align:center; font-size:17px; font-weight:600; margin-bottom:4px; }
   .sub-central{ text-align:center; font-size:12.5px; color:var(--ink-dim); margin-bottom:20px; }
 
   .recibo{
@@ -370,9 +317,9 @@
   }
   .recibo-linha:last-child{ border-bottom:none; }
   .recibo-linha span:first-child{ color:var(--ink-dim); }
-  .recibo-linha span:last-child{ font-family:'IBM Plex Mono', monospace; font-weight:600; }
+  .recibo-linha span:last-child{ font-weight:600; }
 
-  /* ---------- Listas navegaveis (setas + numeros) ---------- */
+  /* ---------- Listas navegaveis ---------- */
   .lista{
     border:1px solid var(--line);
     border-radius:var(--r-md);
@@ -385,15 +332,14 @@
     gap:12px;
     padding:13px 14px;
     border-bottom:1px solid var(--line-soft);
-    background:var(--panel);
+    background:var(--bg);
   }
   .item-lista:last-child{ border-bottom:none; }
   .item-lista.ativo{
-    background:var(--pix-dim);
-    box-shadow:inset 3px 0 0 var(--pix);
+    background:var(--blue-dim);
+    box-shadow:inset 3px 0 0 var(--blue);
   }
   .item-lista .num{
-    font-family:'IBM Plex Mono', monospace;
     font-size:11.5px;
     font-weight:700;
     color:var(--ink-faint);
@@ -401,22 +347,20 @@
     text-align:center;
     flex-shrink:0;
   }
-  .item-lista.ativo .num{ color:var(--pix); }
+  .item-lista.ativo .num{ color:var(--blue); }
   .item-lista .info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .item-lista .principal{ font-size:13.5px; font-weight:500; }
   .item-lista .secundario{ font-size:11.5px; color:var(--ink-dim); }
-  .item-lista .destaque{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:13.5px; }
+  .item-lista .destaque{ font-weight:600; font-size:13.5px; }
   .vazio{ font-size:13px; color:var(--ink-faint); padding:22px 14px; text-align:center; }
   .tag-status{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
-  .tag-status.aprovado{ color:var(--pix); }
-  .tag-status.pendente{ color:var(--amber); }
+  .tag-status.aprovado{ color:var(--blue); }
+  .tag-status.pendente{ color:var(--ink-dim); }
   .tag-status.cancelado, .tag-status.expirado{ color:var(--ink-faint); }
 
-  .dica-navegacao{
-    font-size:11.5px; color:var(--ink-faint); text-align:center; margin-bottom:16px;
-  }
+  .dica-navegacao{ display:none; }
 
-  /* ---------- Rodape: teclas ativas na tela atual ---------- */
+  /* ---------- Rodape: teclas ativas ---------- */
   .rodape{
     flex:0 0 auto;
     display:flex;
@@ -425,13 +369,10 @@
     gap:22px;
     flex-wrap:wrap;
     padding:13px 20px;
-    border-top:1px solid var(--line-soft);
+    border-top:1px solid var(--line);
     background:var(--bg-elev);
   }
-  .dica-tecla{
-    display:flex; align-items:center; gap:8px;
-    font-size:12px; color:var(--ink-dim);
-  }
+  .dica-tecla{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-dim); }
 
   .hidden{ display:none !important; }
 
@@ -479,7 +420,6 @@
   <section id="tela-inicio" class="tela">
     <div class="rotulo">Bem-vindo</div>
     <h1>Quem está entrando?</h1>
-    <p class="sub">Pressione o número correspondente no teclado.</p>
     <div class="grade-inicio">
       <button class="bloco-inicio" data-key="1">
         <div class="tecla grande">1</div>
@@ -504,7 +444,6 @@
   <section id="tela-login-caixa" class="tela hidden">
     <div class="rotulo">Acesso do operador · etapa 1 de 2</div>
     <h1>Número do caixa</h1>
-    <p class="sub">Digite o número e pressione ENTER.</p>
     <div class="visor">
       <input id="input-caixa" type="text" inputmode="numeric" maxlength="4" placeholder="00" autocomplete="off" />
     </div>
@@ -515,7 +454,6 @@
   <section id="tela-login-senha" class="tela hidden">
     <div class="rotulo">Acesso do operador · etapa 2 de 2</div>
     <h1 id="titulo-senha-caixa">Senha do caixa</h1>
-    <p class="sub">Digite a senha e pressione ENTER.</p>
     <div class="visor">
       <input id="input-senha" class="senha-dots" type="password" inputmode="numeric" placeholder="••••" autocomplete="off" />
     </div>
@@ -545,7 +483,6 @@
     <span class="etiqueta"><span class="ponto"></span><span id="tag-caixa-nome">Caixa 12 · 1º turno</span></span>
     <div class="rotulo">Nova cobrança</div>
     <h1>Valor da compra</h1>
-    <p class="sub">Digite o valor e pressione ENTER para gerar o Pix.</p>
     <div class="visor">
       <input id="input-valor" type="text" inputmode="numeric" placeholder="R$ 0,00" autocomplete="off" />
     </div>
@@ -592,7 +529,6 @@
   <section id="tela-admin-senha" class="tela hidden">
     <div class="rotulo amb">Acesso do administrador</div>
     <h1>Senha de administrador</h1>
-    <p class="sub">Digite a senha e pressione ENTER.</p>
     <div class="visor">
       <input id="input-admin-senha" class="senha-dots" type="password" inputmode="numeric" placeholder="••••" autocomplete="off" />
     </div>
@@ -603,7 +539,6 @@
   <section id="tela-admin-menu" class="tela hidden">
     <div class="rotulo amb">Administrador</div>
     <h1>O que você quer fazer?</h1>
-    <p class="sub">Pressione o número correspondente.</p>
     <div class="opcoes">
       <button class="opcao" data-key="1">
         <div class="tecla grande">1</div>
@@ -627,7 +562,6 @@
   <section id="tela-admin-criar-numero" class="tela hidden">
     <div class="rotulo amb">Criar caixa · etapa 1 de 2</div>
     <h1>Número do novo caixa</h1>
-    <p class="sub">Digite o número e pressione ENTER.</p>
     <div class="visor">
       <input id="input-novo-caixa-id" type="text" inputmode="numeric" maxlength="4" placeholder="00" autocomplete="off" />
     </div>
@@ -638,7 +572,6 @@
   <section id="tela-admin-criar-senha" class="tela hidden">
     <div class="rotulo amb">Criar caixa · etapa 2 de 2</div>
     <h1 id="titulo-nova-senha">Senha do caixa</h1>
-    <p class="sub">Defina a senha e pressione ENTER.</p>
     <div class="visor">
       <input id="input-novo-caixa-senha" class="senha-dots" type="password" inputmode="numeric" placeholder="••••" autocomplete="off" />
     </div>
