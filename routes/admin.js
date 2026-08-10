@@ -72,12 +72,20 @@ router.get('/historico/resumo', async (req, res) => {
     return res.status(400).json({ erro: 'caixaId e mes são obrigatórios' });
   }
 
+  // Calcula o primeiro dia do MES SEGUINTE como limite exclusivo.
+  // (usar algo tipo `${mes}-32` quebra, pois nao existe dia 32 em
+  // nenhum mes — o Postgres rejeita a data e a query falha em silencio)
+  const [ano, mesNum] = mes.split('-').map(Number);
+  const proximoMes = mesNum === 12
+    ? `${ano + 1}-01-01`
+    : `${ano}-${String(mesNum + 1).padStart(2, '0')}-01`;
+
   const { data, error } = await supabase
     .from('vw_totais_pix_dia')
     .select('*')
     .eq('caixa_id', caixaId)
     .gte('dia', `${mes}-01`)
-    .lt('dia', `${mes}-32`)
+    .lt('dia', proximoMes)
     .order('dia', { ascending: false });
 
   if (error) return res.status(500).json({ erro: error.message });
