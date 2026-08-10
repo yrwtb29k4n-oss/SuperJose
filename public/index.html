@@ -65,12 +65,12 @@
   }
   .marca{ display:flex; align-items:center; gap:10px; }
   .marca-icone{
-    width:22px; height:22px;
+    width:26px; height:26px;
     display:flex; align-items:center; justify-content:center;
     color:var(--blue);
     flex-shrink:0;
   }
-  .marca-icone svg{ width:100%; height:100%; }
+  .marca-icone img{ width:100%; height:100%; object-fit:contain; }
   .marca-texto{
     font-size:13px;
     font-weight:600;
@@ -268,11 +268,12 @@
   /* ---------- QR ---------- */
   .qr-area{ display:flex; flex-direction:column; align-items:center; text-align:center; }
   .qr-caixa{
-    width:208px; height:208px;
+    width:min(340px, 82vw);
+    height:min(340px, 82vw);
     border-radius:var(--r-md);
     background:#fff;
     border:1px solid var(--line);
-    padding:10px;
+    padding:14px;
     display:flex; align-items:center; justify-content:center;
     margin-bottom:18px;
   }
@@ -404,10 +405,7 @@
 <div class="topbar">
   <div class="marca">
     <div class="marca-icone">
-      <!-- raio Pix -->
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
-      </svg>
+      <img src="https://i.postimg.cc/254j9xQL/IMG-0592.jpg" alt="Super José" />
     </div>
     <div class="marca-texto">Super José Supermercado<small>Terminal Pix</small></div>
   </div>
