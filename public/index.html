@@ -515,6 +515,7 @@
     </div>
 
     <button class="btn" id="btn-novo">Novo pagamento</button>
+    <button class="btn-ghost" id="btn-reimprimir">Reimprimir comprovante</button>
   </section>
 
   <!-- ============ TELA 5: LOGIN ADMIN ============ -->
@@ -607,6 +608,7 @@
     caixaNome: null,
     turno: null,
     valorCentavos: 0,
+    ultimoComprovante: null,
     externalReference: null,
     pollTimer: null,
     adminSenha: null,
@@ -757,7 +759,9 @@
       const data = await resp.json();
 
       if (!resp.ok) {
-        erroEl.textContent = data.erro || 'Não foi possível gerar o Pix.';
+        erroEl.textContent = data.detalhe
+          ? `${data.erro}: ${JSON.stringify(data.detalhe)}`
+          : (data.erro || 'Não foi possível gerar o Pix.');
         erroEl.style.display = 'block';
         return;
       }
@@ -791,21 +795,52 @@
 
         if (data.status === 'aprovado') {
           pararPolling();
+          const dataPagamento = new Date(data.pagoEm);
+          const horaFormatada = dataPagamento.toLocaleTimeString('pt-BR');
+          const dataFormatada = dataPagamento.toLocaleDateString('pt-BR');
           document.getElementById('rec-caixa').textContent = estado.caixaNome;
           document.getElementById('rec-valor').textContent = formatarMoeda(data.valor);
-          document.getElementById('rec-hora').textContent = new Date(data.pagoEm).toLocaleTimeString('pt-BR');
+          document.getElementById('rec-hora').textContent = horaFormatada;
           document.getElementById('rec-id').textContent = data.mpPaymentId;
           mostrarTela('confirmado');
+          estado.ultimoComprovante = {
+            caixaNome: estado.caixaNome,
+            turno: estado.turno,
+            valor: data.valor,
+            horario: horaFormatada,
+            data: dataFormatada,
+            id: data.mpPaymentId,
+          };
+          imprimirComprovante(estado.ultimoComprovante);
         }
       } catch (e) {
         // silencioso — tenta de novo no proximo ciclo
       }
-    }, 3000);
+    }, 1500);
   }
 
   function pararPolling(){
     if (estado.pollTimer) clearInterval(estado.pollTimer);
     estado.pollTimer = null;
+  }
+
+  // ===================================================================
+  // Impressao automatica — chama o agente local (roda no mesmo PC do
+  // caixa, na porta 9123). Se o agente nao estiver ligado, so avisa no
+  // console — a tela de confirmacao ja apareceu e nao depende disso.
+  // ===================================================================
+  const AGENTE_IMPRESSAO_URL = 'http://127.0.0.1:9123/imprimir';
+
+  async function imprimirComprovante(dados){
+    try {
+      await fetch(AGENTE_IMPRESSAO_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dados),
+      });
+    } catch (e) {
+      console.warn('Agente de impressao nao respondeu (ele esta ligado neste PC?).', e);
+    }
   }
 
   // ===================================================================
@@ -815,6 +850,18 @@
     document.getElementById('input-valor').value = '';
     estado.valorCentavos = 0;
     mostrarTela('valor');
+  });
+
+  document.getElementById('btn-reimprimir').addEventListener('click', (e) => {
+    if (!estado.ultimoComprovante) return;
+    const botao = e.target;
+    const textoOriginal = botao.textContent;
+    botao.textContent = 'Imprimindo...';
+    botao.disabled = true;
+    imprimirComprovante(estado.ultimoComprovante).finally(() => {
+      botao.textContent = textoOriginal;
+      botao.disabled = false;
+    });
   });
 
   // ===================================================================
@@ -1041,7 +1088,11 @@
       const resp = await fetch(`${API_BASE}/admin/historico/resumo?caixaId=${estado.histCaixaId}&mes=${mes}`, { headers: headersAdmin() });
       const dias = await resp.json();
 
-      if (!resp.ok || !dias.length) {
+      if (!resp.ok) {
+        resumoEl.innerHTML = `<div class="vazio">Erro: ${dias.erro || 'falha ao carregar'}</div>`;
+        return;
+      }
+      if (!dias.length) {
         resumoEl.innerHTML = '<div class="vazio">Nenhum Pix aprovado nesse mês.</div>';
         return;
       }
