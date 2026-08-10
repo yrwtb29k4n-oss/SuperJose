@@ -1,1250 +1,1489 @@
-
 <!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Super José Supermercado — Pix</title>
+<title>Super José Supermercado — Terminal Pix</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* =====================================================================
+     TOKENS
+     Terminal de caixa (maquininha) e nao um site — a tela toda e o
+     "visor". Fundo grafite (nao preto puro), um unico acento (o verde-
+     piscina do Pix) reservado pra "confirmar/avancar", e ambar pra area
+     administrativa. Tecla ENTER e sempre a mesma cor em todo o sistema:
+     e o unico jeito de "seguir em frente".
+     ===================================================================== */
   :root{
-    --blue:#2F5AFF;
-    --blue-dark:#1E3FCC;
-    --blue-tint:#EEF2FF;
-    --ink:#0B0D12;
-    --ink-soft:#6B7280;
-    --line:#E5E7EB;
-    --bg:#FFFFFF;
-    --green:#16A34A;
-    --green-tint:#EAFBF1;
-    --red:#DC2626;
-    --red-tint:#FEF2F2;
-    --radius:16px;
-    --radius-sm:10px;
+    --bg:        #14171A;
+    --bg-elev:   #191D21;
+    --panel:     #1E2226;
+    --panel-2:   #23282D;
+    --line:      #2C3238;
+    --line-soft: #23282D;
+    --ink:       #EFF2F1;
+    --ink-dim:   #939CA1;
+    --ink-faint: #565E63;
+
+    --pix:       #2FBFAE;
+    --pix-ink:   #08201C;
+    --pix-dim:   rgba(47,191,174,0.13);
+
+    --amber:     #E3A23C;
+    --amber-dim: rgba(227,162,60,0.13);
+
+    --danger:    #E2565C;
+    --danger-dim:rgba(226,86,92,0.13);
+
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  html,body{height:100%;}
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:'Inter', system-ui, sans-serif;
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
     -webkit-font-smoothing:antialiased;
+    height:100vh;
+    overflow:hidden;
     display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    min-height:100vh;
-    padding:24px;
+    flex-direction:column;
   }
-  .mono{ font-family:'JetBrains Mono', monospace; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  ::selection{ background:var(--pix-dim); }
 
-  .app{
-    width:100%;
-    max-width:400px;
-    margin-top:6vh;
-  }
+  input{ font-family:inherit; color:inherit; }
+  input:focus{ outline:none; }
+  button{ font-family:inherit; cursor:pointer; }
 
-  /* ---------- Header / marca ---------- */
-  .brand{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:28px;
-  }
-  .brand-icon{
-    width:36px; height:36px;
-    border-radius:10px;
-    background:var(--blue);
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0;
-  }
-  .brand-icon svg{ width:20px; height:20px; }
-  .brand-name{
-    font-size:15px;
-    font-weight:600;
-    letter-spacing:-0.01em;
-  }
-  .brand-sub{
-    font-size:12px;
-    color:var(--ink-soft);
-  }
-
-  /* ---------- Card ---------- */
-  .card{
-    background:var(--bg);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:32px 28px;
-  }
-  .step-label{
-    font-size:12px;
-    font-weight:600;
-    color:var(--blue);
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    margin-bottom:8px;
-  }
-  h1{
-    font-size:20px;
-    font-weight:600;
-    letter-spacing:-0.015em;
-    margin-bottom:6px;
-  }
-  .subtitle{
-    font-size:14px;
-    color:var(--ink-soft);
-    margin-bottom:24px;
-    line-height:1.5;
-  }
-
-  /* ---------- Inputs ---------- */
-  .field{ margin-bottom:16px; }
-  .field label{
-    display:block;
-    font-size:13px;
-    font-weight:500;
-    color:var(--ink);
-    margin-bottom:6px;
-  }
-  .field input, .field select{
-    width:100%;
-    padding:12px 14px;
-    border:1px solid var(--line);
-    border-radius:var(--radius-sm);
-    font-size:15px;
-    font-family:inherit;
-    color:var(--ink);
-    background:#fff;
-    transition:border-color .15s ease, box-shadow .15s ease;
-  }
-  .field input:focus, .field select:focus{
-    outline:none;
-    border-color:var(--blue);
-    box-shadow:0 0 0 3px var(--blue-tint);
-  }
-  .field input::placeholder{ color:#B0B4BC; }
-
-  .valor-input{
-    font-family:'JetBrains Mono', monospace;
-    font-size:32px !important;
-    font-weight:600;
-    text-align:center;
-    padding:20px 14px !important;
-    letter-spacing:-0.02em;
-  }
-
-  /* ---------- Botão ---------- */
-  .btn{
-    width:100%;
-    padding:13px 16px;
-    border:none;
-    border-radius:var(--radius-sm);
-    background:var(--blue);
-    color:#fff;
-    font-size:15px;
-    font-weight:600;
-    font-family:inherit;
-    cursor:pointer;
-    transition:background .15s ease, transform .05s ease;
-  }
-  .btn:hover{ background:var(--blue-dark); }
-  .btn:active{ transform:scale(0.98); }
-  .btn:disabled{ background:#C7D0F5; cursor:not-allowed; }
-  .btn-ghost{
-    width:100%;
-    padding:13px 16px;
-    border:1px solid var(--line);
-    border-radius:var(--radius-sm);
-    background:transparent;
-    color:var(--ink);
-    font-size:14px;
-    font-weight:500;
-    font-family:inherit;
-    cursor:pointer;
-    margin-top:10px;
-  }
-  .btn-ghost:hover{ border-color:#C7CBD3; }
-
-  .btn-outline{
-    width:100%;
-    padding:16px 16px;
-    border:1px solid var(--line);
-    border-radius:var(--radius-sm);
-    background:#fff;
-    color:var(--ink);
-    font-size:15px;
-    font-weight:600;
-    font-family:inherit;
-    cursor:pointer;
+  /* ---------- Barra superior: marca + posicao atual ---------- */
+  .topbar{
+    flex:0 0 auto;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    transition:border-color .15s ease, background .15s ease;
+    padding:14px 22px;
+    border-bottom:1px solid var(--line-soft);
+    background:var(--bg-elev);
   }
-  .btn-outline:hover{ border-color:var(--blue); background:var(--blue-tint); }
-  .btn-outline .desc{
+  .marca{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .marca-icone{
+    width:26px; height:26px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--pix);
+    flex-shrink:0;
+  }
+  .marca-icone svg{ width:100%; height:100%; }
+  .marca-texto{
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .marca-texto small{
     display:block;
-    font-size:12px;
-    font-weight:400;
-    color:var(--ink-soft);
-    margin-top:2px;
-  }
-  .btn-outline .arrow{ color:var(--ink-soft); font-size:18px; }
-
-  .opcoes-inicio{ display:flex; flex-direction:column; gap:12px; }
-
-  .btn-sm{
-    padding:7px 12px;
-    font-size:12px;
+    font-size:10.5px;
     font-weight:500;
-    border:1px solid var(--line);
-    border-radius:8px;
-    background:#fff;
-    color:var(--ink);
-    cursor:pointer;
-    font-family:inherit;
-    white-space:nowrap;
+    color:var(--ink-faint);
+    letter-spacing:0.02em;
   }
-  .btn-sm:hover{ border-color:#C7CBD3; }
-  .btn-sm-danger{ color:var(--red); border-color:#FCA5A5; }
-  .btn-sm-danger:hover{ background:var(--red-tint); }
+  .trilha{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+  }
+  .trilha b{ color:var(--ink-dim); }
 
-  .erro{
-    font-size:13px;
-    color:#DC2626;
-    margin-top:-8px;
-    margin-bottom:14px;
-    display:none;
+  /* ---------- Palco (onde as telas aparecem) ---------- */
+  .palco{
+    flex:1 1 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    overflow-y:auto;
+    min-height:0;
   }
-  .aviso-ok{
-    font-size:13px;
-    color:var(--green);
-    margin-top:-8px;
-    margin-bottom:14px;
-    display:none;
+  .tela{
+    width:100%;
+    max-width:460px;
+  }
+  .tela.hidden{ display:none; }
+
+  .rotulo{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--pix);
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    margin-bottom:10px;
+  }
+  .rotulo.amb{ color:var(--amber); }
+  h1{
+    font-size:21px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin-bottom:6px;
+  }
+  .sub{
+    font-size:13.5px;
+    color:var(--ink-dim);
+    line-height:1.5;
+    margin-bottom:22px;
   }
 
-  /* ---------- Tela de valor: caixa logado ---------- */
-  .caixa-tag{
+  /* ---------- Tecla: o elemento assinatura do sistema ----------
+     Toda acao possivel na tela mostra a tecla fisica que aciona ela.
+     Visual de tecla de verdade: bisel, sombra interna, "afunda" ao
+     ser pressionada. */
+  .tecla{
     display:inline-flex;
     align-items:center;
-    gap:6px;
-    background:var(--blue-tint);
-    color:var(--blue-dark);
-    font-size:12px;
-    font-weight:600;
-    padding:5px 10px;
-    border-radius:100px;
-    margin-bottom:20px;
+    justify-content:center;
+    min-width:28px;
+    height:28px;
+    padding:0 8px;
+    border-radius:7px;
+    background:linear-gradient(180deg,#2A3036,#1E2327);
+    border:1px solid #363D43;
+    border-bottom:2px solid #101315;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    color:var(--ink);
+    flex-shrink:0;
+    transition:transform .04s ease, border-bottom-width .04s ease;
   }
-  .caixa-tag .dot{
-    width:6px; height:6px; border-radius:50%; background:var(--blue);
+  .tecla.grande{ min-width:34px; height:34px; font-size:14px; border-radius:8px; }
+  .tecla.ir{
+    background:linear-gradient(180deg,#3AD6C3,#26A392);
+    border-color:#1E8577;
+    border-bottom-color:#125046;
+    color:var(--pix-ink);
   }
+  .tecla.pressed{ transform:translateY(1px); border-bottom-width:1px; }
 
-  /* ---------- QR / aguardando ---------- */
-  .qr-wrap{
+  /* ---------- Opcao (linha de escolha numerada) ---------- */
+  .opcoes{ display:flex; flex-direction:column; gap:10px; }
+  .opcao{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px;
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    background:var(--panel);
+    color:var(--ink);
+    text-align:left;
+  }
+  .opcao:active{ background:var(--panel-2); }
+  .opcao .icone{
+    width:30px; height:30px;
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-dim);
+  }
+  .opcao .icone svg{ width:100%; height:100%; }
+  .opcao .texto{ flex:1; min-width:0; }
+  .opcao .titulo{ font-size:14.5px; font-weight:600; }
+  .opcao .desc{ font-size:12px; color:var(--ink-dim); margin-top:2px; }
+  .opcao .tag{ font-size:11px; font-weight:600; padding:2px 8px; border-radius:100px; }
+  .opcao .tag.ok{ color:var(--pix); background:var(--pix-dim); }
+  .opcao .tag.off{ color:var(--danger); background:var(--danger-dim); }
+
+  /* ---------- Painel de entrada inicial: dois blocos simetricos ---------- */
+  .grade-inicio{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width:520px){
+    .grade-inicio{ grid-template-columns:1fr; }
+  }
+  .bloco-inicio{
     display:flex;
     flex-direction:column;
     align-items:center;
     text-align:center;
-  }
-  .qr-ring{
-    position:relative;
-    width:220px; height:220px;
-    border-radius:20px;
-    display:flex; align-items:center; justify-content:center;
-    margin-bottom:20px;
-  }
-  .qr-ring::before{
-    content:'';
-    position:absolute;
-    inset:-8px;
-    border-radius:24px;
-    border:2px solid var(--blue);
-    opacity:0.35;
-    animation:pulse 1.8s ease-in-out infinite;
-  }
-  @keyframes pulse{
-    0%{ transform:scale(1); opacity:0.5; }
-    70%{ transform:scale(1.08); opacity:0; }
-    100%{ transform:scale(1.08); opacity:0; }
-  }
-  .qr-img{
-    width:200px; height:200px;
-    border-radius:12px;
+    gap:12px;
+    padding:28px 18px;
     border:1px solid var(--line);
-    background:#fff;
+    border-radius:var(--r-lg);
+    background:var(--panel);
+    color:var(--ink);
+    min-height:190px;
+    justify-content:center;
   }
-  .qr-status{
+  .bloco-inicio .icone{
+    width:34px; height:34px;
+    color:var(--ink-dim);
+  }
+  .bloco-inicio .icone svg{ width:100%; height:100%; }
+  .bloco-inicio .titulo{ font-size:15px; font-weight:600; }
+  .bloco-inicio .desc{ font-size:12px; color:var(--ink-dim); line-height:1.4; }
+  .bloco-inicio.admin .icone{ color:var(--amber); }
+
+  /* ---------- Entrada numerica (visor grande) ---------- */
+  .visor{
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    background:var(--panel);
+    padding:20px;
+    margin-bottom:14px;
+  }
+  .visor input{
+    width:100%;
+    border:none;
+    background:transparent;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:34px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    text-align:center;
+    color:var(--ink);
+  }
+  .visor input::placeholder{ color:var(--ink-faint); }
+  .visor input.senha-dots{ letter-spacing:0.3em; }
+
+  .dica{
+    font-size:12px;
+    color:var(--ink-faint);
+    text-align:center;
+    margin-bottom:18px;
+  }
+  .erro-box{
+    display:none;
     font-size:13px;
-    font-weight:500;
-    color:var(--ink-soft);
-    display:flex;
+    color:var(--danger);
+    background:var(--danger-dim);
+    border:1px solid rgba(226,86,92,0.3);
+    border-radius:var(--r-sm);
+    padding:10px 12px;
+    margin-bottom:16px;
+  }
+  .ok-box{
+    display:none;
+    font-size:13px;
+    color:var(--pix);
+    background:var(--pix-dim);
+    border:1px solid rgba(47,191,174,0.3);
+    border-radius:var(--r-sm);
+    padding:10px 12px;
+    margin-bottom:16px;
+  }
+
+  /* ---------- Etiqueta do caixa logado ---------- */
+  .etiqueta{
+    display:inline-flex;
     align-items:center;
     gap:7px;
-    margin-bottom:4px;
-  }
-  .qr-status .dot{
-    width:7px; height:7px; border-radius:50%;
-    background:var(--blue);
-    animation:blink 1.4s ease-in-out infinite;
-  }
-  @keyframes blink{
-    0%,100%{ opacity:1; }
-    50%{ opacity:0.25; }
-  }
-  .qr-valor{
-    font-family:'JetBrains Mono', monospace;
-    font-size:28px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
     font-weight:600;
-    margin:14px 0 4px;
+    color:var(--pix);
+    background:var(--pix-dim);
+    padding:5px 10px;
+    border-radius:100px;
+    margin-bottom:18px;
   }
-  .qr-hint{
-    font-size:12.5px;
-    color:var(--ink-soft);
-    max-width:260px;
-    line-height:1.5;
-    margin-top:6px;
+  .etiqueta .ponto{ width:6px; height:6px; border-radius:50%; background:var(--pix); }
+
+  /* ---------- QR ---------- */
+  .qr-area{ display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .qr-caixa{
+    width:216px; height:216px;
+    border-radius:var(--r-md);
+    background:#fff;
+    padding:10px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:18px;
+    position:relative;
+  }
+  .qr-caixa::after{
+    content:'';
+    position:absolute; inset:-1px;
+    border-radius:var(--r-md);
+    border:2px solid var(--pix);
+    opacity:0.4;
+    animation:respirar 1.8s ease-in-out infinite;
+  }
+  @keyframes respirar{
+    0%{ transform:scale(1); opacity:.55; }
+    70%{ transform:scale(1.045); opacity:0; }
+    100%{ opacity:0; }
+  }
+  .qr-caixa img{ width:100%; height:100%; object-fit:contain; }
+  .status-espera{
+    display:flex; align-items:center; gap:7px;
+    font-size:12.5px; font-weight:500; color:var(--ink-dim);
+    margin-bottom:6px;
+  }
+  .status-espera .ponto{
+    width:6px; height:6px; border-radius:50%; background:var(--pix);
+    animation:piscar 1.3s ease-in-out infinite;
+  }
+  @keyframes piscar{ 0%,100%{opacity:1;} 50%{opacity:.2;} }
+  .valor-grande{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:30px; font-weight:600;
+    margin:10px 0 6px;
+  }
+  .qr-instrucao{
+    font-size:12px; color:var(--ink-faint); max-width:280px; line-height:1.5;
   }
 
   /* ---------- Confirmado ---------- */
-  .check-wrap{
+  .marca-check{
+    width:56px; height:56px; border-radius:50%;
+    background:var(--pix-dim);
     display:flex; align-items:center; justify-content:center;
-    width:64px; height:64px;
-    border-radius:50%;
-    background:var(--green-tint);
-    margin:0 auto 18px;
+    margin:0 auto 16px;
+    color:var(--pix);
   }
-  .check-wrap svg{ width:30px; height:30px; }
-  .confirmado-titulo{
-    text-align:center;
-    font-size:19px;
-    font-weight:600;
-    margin-bottom:4px;
-  }
-  .confirmado-sub{
-    text-align:center;
-    font-size:13px;
-    color:var(--ink-soft);
-    margin-bottom:22px;
-  }
-  .comprovante{
+  .marca-check svg{ width:26px; height:26px; }
+  .titulo-central{ text-align:center; font-size:18px; font-weight:600; margin-bottom:4px; }
+  .sub-central{ text-align:center; font-size:12.5px; color:var(--ink-dim); margin-bottom:20px; }
+
+  .recibo{
     border:1px solid var(--line);
-    border-radius:var(--radius-sm);
-    padding:16px 18px;
+    border-radius:var(--r-md);
+    background:var(--panel);
+    padding:6px 16px;
     margin-bottom:20px;
   }
-  .comprovante-linha{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:8px 0;
-    border-bottom:1px solid #F2F3F5;
-    font-size:13.5px;
+  .recibo-linha{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid var(--line-soft);
+    font-size:13px;
   }
-  .comprovante-linha:last-child{ border-bottom:none; }
-  .comprovante-linha span:first-child{ color:var(--ink-soft); }
-  .comprovante-linha span:last-child{
-    font-family:'JetBrains Mono', monospace;
-    font-weight:500;
+  .recibo-linha:last-child{ border-bottom:none; }
+  .recibo-linha span:first-child{ color:var(--ink-dim); }
+  .recibo-linha span:last-child{ font-family:'IBM Plex Mono', monospace; font-weight:600; }
+
+  /* ---------- Listas navegaveis (setas + numeros) ---------- */
+  .lista{
+    border:1px solid var(--line);
+    border-radius:var(--r-md);
+    overflow:hidden;
+    margin-bottom:6px;
+  }
+  .item-lista{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:13px 14px;
+    border-bottom:1px solid var(--line-soft);
+    background:var(--panel);
+  }
+  .item-lista:last-child{ border-bottom:none; }
+  .item-lista.ativo{
+    background:var(--pix-dim);
+    box-shadow:inset 3px 0 0 var(--pix);
+  }
+  .item-lista .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--ink-faint);
+    width:16px;
+    text-align:center;
+    flex-shrink:0;
+  }
+  .item-lista.ativo .num{ color:var(--pix); }
+  .item-lista .info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .item-lista .principal{ font-size:13.5px; font-weight:500; }
+  .item-lista .secundario{ font-size:11.5px; color:var(--ink-dim); }
+  .item-lista .destaque{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:13.5px; }
+  .vazio{ font-size:13px; color:var(--ink-faint); padding:22px 14px; text-align:center; }
+  .tag-status{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+  .tag-status.aprovado{ color:var(--pix); }
+  .tag-status.pendente{ color:var(--amber); }
+  .tag-status.cancelado, .tag-status.expirado{ color:var(--ink-faint); }
+
+  .dica-navegacao{
+    font-size:11.5px; color:var(--ink-faint); text-align:center; margin-bottom:16px;
   }
 
-  /* ---------- Admin ---------- */
-  .admin-secao{ margin-top:26px; }
-  .admin-secao:first-of-type{ margin-top:0; }
-  .admin-secao-titulo{
-    font-size:12px;
-    font-weight:600;
-    color:var(--ink-soft);
-    text-transform:uppercase;
-    letter-spacing:0.05em;
-    margin-bottom:12px;
-  }
-  .lista{ border:1px solid var(--line); border-radius:var(--radius-sm); overflow:hidden; }
-  .lista-item{
+  /* ---------- Rodape: teclas ativas na tela atual ---------- */
+  .rodape{
+    flex:0 0 auto;
     display:flex;
-    justify-content:space-between;
     align-items:center;
-    gap:10px;
-    padding:12px 14px;
-    border-bottom:1px solid var(--line);
-    font-size:13.5px;
+    justify-content:center;
+    gap:22px;
+    flex-wrap:wrap;
+    padding:13px 20px;
+    border-top:1px solid var(--line-soft);
+    background:var(--bg-elev);
   }
-  .lista-item:last-child{ border-bottom:none; }
-  .lista-item .info{ display:flex; flex-direction:column; gap:2px; min-width:0; }
-  .lista-item .info .principal{ font-weight:500; }
-  .lista-item .info .secundario{ font-size:12px; color:var(--ink-soft); }
-  .tag-ativo{ color:var(--green); font-size:11px; font-weight:600; }
-  .tag-inativo{ color:var(--red); font-size:11px; font-weight:600; }
-  .vazio{ font-size:13px; color:var(--ink-soft); padding:14px; text-align:center; }
-  .clicavel{ cursor:pointer; }
-  .clicavel:hover{ background:var(--blue-tint); }
-  .valor-destaque{ font-family:'JetBrains Mono', monospace; font-weight:600; }
+  .dica-tecla{
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--ink-dim);
+  }
 
   .hidden{ display:none !important; }
 
-  footer{
-    text-align:center;
-    font-size:11.5px;
-    color:#B0B4BC;
-    margin-top:20px;
-  }
   /* =====================================================================
      Area de impressao — invisivel na tela, so existe pro cupom termico.
      ===================================================================== */
-  #area-impressao{
-    display: none;
-  }
-
+  #area-impressao{ display:none; }
   @media print {
-    /* Esconde TUDO da tela normal na hora de imprimir */
-    body > *:not(#area-impressao){
-      display: none !important;
-    }
+    body > *:not(#area-impressao){ display:none !important; }
     #area-impressao{
-      display: block !important;
-      width: 72mm; /* cabe em bobina de 80mm com margem de seguranca */
-      font-family: 'Courier New', monospace;
-      color: #000;
+      display:block !important;
+      width:72mm;
+      font-family:'Courier New', monospace;
+      color:#000;
     }
-    @page{
-      size: 80mm auto;
-      margin: 2mm;
-    }
-    .cupom-loja{
-      text-align: center;
-      font-weight: bold;
-      font-size: 14pt;
-      margin-bottom: 2mm;
-    }
-    .cupom-titulo{
-      text-align: center;
-      font-weight: bold;
-      font-size: 16pt;
-      margin: 2mm 0;
-    }
-    .cupom-linha-dupla{
-      text-align: center;
-      font-size: 10pt;
-      letter-spacing: -1px;
-      margin: 1mm 0;
-    }
-    .cupom-caixa{
-      text-align: center;
-      font-weight: bold;
-      font-size: 22pt;
-      margin: 2mm 0 0 0;
-    }
-    .cupom-turno{
-      text-align: center;
-      font-weight: bold;
-      font-size: 16pt;
-      margin-bottom: 2mm;
-    }
-    .cupom-valor{
-      text-align: center;
-      font-weight: bold;
-      font-size: 26pt;
-      margin: 2mm 0;
-    }
-    .cupom-info{
-      display: flex;
-      justify-content: space-between;
-      font-size: 11pt;
-      margin: 1mm 0;
-    }
+    @page{ size:80mm auto; margin:2mm; }
+    .cupom-loja{ text-align:center; font-weight:bold; font-size:14pt; margin-bottom:2mm; }
+    .cupom-titulo{ text-align:center; font-weight:bold; font-size:16pt; margin:2mm 0; }
+    .cupom-linha-dupla{ text-align:center; font-size:10pt; letter-spacing:-1px; margin:1mm 0; }
+    .cupom-caixa{ text-align:center; font-weight:bold; font-size:22pt; margin:2mm 0 0 0; }
+    .cupom-turno{ text-align:center; font-weight:bold; font-size:16pt; margin-bottom:2mm; }
+    .cupom-valor{ text-align:center; font-weight:bold; font-size:26pt; margin:2mm 0; }
+    .cupom-info{ display:flex; justify-content:space-between; font-size:11pt; margin:1mm 0; }
   }
 </style>
 </head>
 <body>
 
-<div class="app">
-  <div class="brand">
-    <div class="brand-icon">
+<div class="topbar">
+  <div class="marca">
+    <div class="marca-icone">
+      <!-- raio Pix -->
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M13 2L4 14H11L10 22L20 9H13L13 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
       </svg>
     </div>
-    <div>
-      <div class="brand-name">Super José Supermercado</div>
-      <div class="brand-sub">Sistema de Pix</div>
-    </div>
+    <div class="marca-texto">Super José Supermercado<small>Terminal Pix</small></div>
   </div>
+  <div class="trilha mono" id="trilha">INÍCIO</div>
+</div>
 
-  <!-- ============ TELA 0: INICIO ============ -->
-  <section id="tela-inicio" class="card">
-    <div class="step-label">Bem-vindo</div>
-    <h1>Como você quer entrar?</h1>
-    <p class="subtitle">Escolha uma opção para continuar.</p>
+<div class="palco">
 
-    <div class="opcoes-inicio">
-      <button class="btn-outline" id="btn-ir-operador">
-        <span>
-          Operador
-          <span class="desc">Login do caixa para gerar Pix</span>
-        </span>
-        <span class="arrow">›</span>
+  <!-- ============ INICIO ============ -->
+  <section id="tela-inicio" class="tela">
+    <div class="rotulo">Bem-vindo</div>
+    <h1>Quem está entrando?</h1>
+    <p class="sub">Pressione o número correspondente no teclado.</p>
+    <div class="grade-inicio">
+      <button class="bloco-inicio" data-key="1">
+        <div class="tecla grande">1</div>
+        <div class="icone">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="7" width="18" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M7 7V5.5C7 4.67 7.67 4 8.5 4H15.5C16.33 4 17 4.67 17 5.5V7" stroke="currentColor" stroke-width="1.6"/><path d="M7 13H10M14 13H17M7 16H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <div class="titulo">Operador</div>
+        <div class="desc">Login do caixa para gerar um Pix</div>
       </button>
-      <button class="btn-outline" id="btn-ir-admin">
-        <span>
-          Administrador
-          <span class="desc">Criar caixas e ver histórico</span>
-        </span>
-        <span class="arrow">›</span>
+      <button class="bloco-inicio admin" data-key="2">
+        <div class="tecla grande">2</div>
+        <div class="icone">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L19 6V11C19 15.5 16 18.5 12 20C8 18.5 5 15.5 5 11V6L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 11.2L11.2 12.9L14.7 9.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="titulo">Administrador</div>
+        <div class="desc">Criar caixas e ver histórico</div>
       </button>
     </div>
   </section>
 
-  <!-- ============ TELA 1: LOGIN OPERADOR ============ -->
-  <section id="tela-login" class="card hidden">
-    <div class="step-label">Acesso</div>
-    <h1>Login do caixa</h1>
-    <p class="subtitle">Informe o número do seu caixa e a senha para começar.</p>
-
-    <div class="field">
-      <label for="input-caixa">Número do caixa</label>
-      <input id="input-caixa" type="number" inputmode="numeric" placeholder="Ex: 12" />
+  <!-- ============ OPERADOR: NUMERO DO CAIXA ============ -->
+  <section id="tela-login-caixa" class="tela hidden">
+    <div class="rotulo">Acesso do operador · etapa 1 de 2</div>
+    <h1>Número do caixa</h1>
+    <p class="sub">Digite o número e pressione ENTER.</p>
+    <div class="visor">
+      <input id="input-caixa" type="text" inputmode="numeric" maxlength="4" placeholder="00" autocomplete="off" />
     </div>
-    <div class="field">
-      <label for="input-senha">Senha</label>
-      <input id="input-senha" type="password" placeholder="••••••" />
-    </div>
-    <div id="erro-login" class="erro">Caixa ou senha incorretos.</div>
-
-    <button class="btn" id="btn-login">Entrar</button>
-    <button class="btn-ghost" id="btn-voltar-inicio-1">Voltar</button>
+    <div id="erro-login-caixa" class="erro-box">Preencha o número do caixa.</div>
   </section>
 
-  <!-- ============ TELA 1.5: SELECAO DE TURNO ============ -->
-  <section id="tela-turno" class="card hidden">
-    <span class="caixa-tag"><span class="dot"></span><span id="tag-caixa-nome-turno">Caixa 12</span></span>
-    <h1>Qual turno você está?</h1>
-    <p class="subtitle">Os Pix gerados agora ficam registrados neste turno.</p>
-
-    <div class="opcoes-inicio">
-      <button class="btn-outline" id="btn-turno-1">
-        <span>1º Turno</span>
-        <span class="arrow">›</span>
-      </button>
-      <button class="btn-outline" id="btn-turno-2">
-        <span>2º Turno</span>
-        <span class="arrow">›</span>
-      </button>
+  <!-- ============ OPERADOR: SENHA DO CAIXA ============ -->
+  <section id="tela-login-senha" class="tela hidden">
+    <div class="rotulo">Acesso do operador · etapa 2 de 2</div>
+    <h1 id="titulo-senha-caixa">Senha do caixa</h1>
+    <p class="sub">Digite a senha e pressione ENTER.</p>
+    <div class="visor">
+      <input id="input-senha" class="senha-dots" type="password" inputmode="numeric" placeholder="••••" autocomplete="off" />
     </div>
-    <button class="btn-ghost" id="btn-voltar-login" style="margin-top:12px;">Voltar</button>
+    <div id="erro-login-senha" class="erro-box">Caixa ou senha incorretos.</div>
   </section>
 
-  <!-- ============ TELA 2: VALOR DA COMPRA ============ -->
-  <section id="tela-valor" class="card hidden">
-    <span class="caixa-tag"><span class="dot"></span><span id="tag-caixa-nome">Caixa 12</span></span>
+  <!-- ============ TURNO ============ -->
+  <section id="tela-turno" class="tela hidden">
+    <span class="etiqueta"><span class="ponto"></span><span id="tag-caixa-nome-turno">Caixa 12</span></span>
+    <div class="rotulo">Início do turno</div>
+    <h1>Qual turno é esse?</h1>
+    <p class="sub">Os Pix gerados agora ficam registrados neste turno.</p>
+    <div class="opcoes">
+      <button class="opcao" data-key="1">
+        <div class="tecla grande">1</div>
+        <div class="texto"><div class="titulo">1º Turno</div></div>
+      </button>
+      <button class="opcao" data-key="2">
+        <div class="tecla grande">2</div>
+        <div class="texto"><div class="titulo">2º Turno</div></div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ VALOR ============ -->
+  <section id="tela-valor" class="tela hidden">
+    <span class="etiqueta"><span class="ponto"></span><span id="tag-caixa-nome">Caixa 12 · 1º turno</span></span>
+    <div class="rotulo">Nova cobrança</div>
     <h1>Valor da compra</h1>
-    <p class="subtitle">Digite o valor para gerar o Pix.</p>
-
-    <div class="field">
-      <input id="input-valor" class="valor-input" type="text" inputmode="numeric" placeholder="R$ 0,00" />
+    <p class="sub">Digite o valor e pressione ENTER para gerar o Pix.</p>
+    <div class="visor">
+      <input id="input-valor" type="text" inputmode="numeric" placeholder="R$ 0,00" autocomplete="off" />
     </div>
-    <div id="erro-valor" class="erro">Informe um valor válido.</div>
-
-    <button class="btn" id="btn-gerar">Gerar Pix</button>
-    <button class="btn-ghost" id="btn-logout">Sair</button>
+    <div id="erro-valor" class="erro-box">Informe um valor válido.</div>
   </section>
 
-  <!-- ============ TELA 3: QR CODE / AGUARDANDO ============ -->
-  <section id="tela-qr" class="card hidden">
-    <div class="qr-wrap">
-      <div class="step-label">Escaneie para pagar</div>
-      <div class="qr-ring">
-        <img id="qr-img" class="qr-img" src="" alt="QR Code Pix" />
-      </div>
-      <div class="qr-status"><span class="dot"></span> Aguardando pagamento</div>
-      <div class="qr-valor mono" id="qr-valor">R$ 0,00</div>
-      <p class="qr-hint">Peça para o cliente abrir o app do banco e escanear o código. O valor e o destinatário já vêm preenchidos automaticamente.</p>
-      <button class="btn-ghost" id="btn-cancelar-qr" style="margin-top:22px;">Cancelar cobrança</button>
+  <!-- ============ QR / AGUARDANDO ============ -->
+  <section id="tela-qr" class="tela hidden">
+    <div class="qr-area">
+      <div class="rotulo">Aguardando pagamento</div>
+      <div class="qr-caixa"><img id="qr-img" src="" alt="QR Code Pix" /></div>
+      <div class="status-espera"><span class="ponto"></span> Esperando o cliente pagar</div>
+      <div class="valor-grande mono" id="qr-valor">R$ 0,00</div>
+      <p class="qr-instrucao">Peça para o cliente abrir o app do banco e escanear o código. Valor e destinatário já vêm preenchidos.</p>
     </div>
   </section>
 
-  <!-- ============ TELA 4: CONFIRMADO ============ -->
-  <section id="tela-confirmado" class="card hidden">
-    <div class="check-wrap">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 13L9.5 17.5L19 7" stroke="#16A34A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+  <!-- ============ CONFIRMADO ============ -->
+  <section id="tela-confirmado" class="tela hidden">
+    <div class="marca-check">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <div class="confirmado-titulo">Pagamento confirmado</div>
-    <div class="confirmado-sub">Confirme a impressão do comprovante na caixa de diálogo.</div>
-
-    <div class="comprovante">
-      <div class="comprovante-linha"><span>Caixa</span><span id="rec-caixa">—</span></div>
-      <div class="comprovante-linha"><span>Valor</span><span id="rec-valor">—</span></div>
-      <div class="comprovante-linha"><span>Horário</span><span id="rec-hora">—</span></div>
-      <div class="comprovante-linha"><span>ID da transação</span><span id="rec-id">—</span></div>
+    <div class="titulo-central">Pagamento confirmado</div>
+    <div class="sub-central">O comprovante já foi enviado para impressão.</div>
+    <div class="recibo">
+      <div class="recibo-linha"><span>Caixa</span><span id="rec-caixa">—</span></div>
+      <div class="recibo-linha"><span>Valor</span><span id="rec-valor">—</span></div>
+      <div class="recibo-linha"><span>Horário</span><span id="rec-hora">—</span></div>
+      <div class="recibo-linha"><span>ID da transação</span><span id="rec-id">—</span></div>
     </div>
-
-    <button class="btn" id="btn-novo">Novo pagamento</button>
-    <button class="btn-ghost" id="btn-reimprimir">Reimprimir comprovante</button>
+    <div class="opcoes">
+      <button class="opcao" data-key="1">
+        <div class="tecla grande">1</div>
+        <div class="texto"><div class="titulo">Novo pagamento</div></div>
+      </button>
+      <button class="opcao" data-key="2">
+        <div class="tecla grande">2</div>
+        <div class="texto"><div class="titulo">Reimprimir comprovante</div></div>
+      </button>
+    </div>
   </section>
 
-  <!-- ============ AREA DE IMPRESSAO ============
-       Fica invisivel na tela normal — so aparece quando o navegador
-       manda pra impressora (window.print()), via @media print no CSS.
-       E' isso que sai fisicamente no cupom termico. -->
-  <div id="area-impressao">
-    <div class="cupom-loja">SUPER JOSE SUPERMERCADO</div>
-    <div class="cupom-linha-dupla">================================</div>
-    <div class="cupom-titulo">PIX CONFIRMADO</div>
-    <div class="cupom-linha-dupla">================================</div>
-    <div class="cupom-caixa" id="print-caixa">Caixa —</div>
-    <div class="cupom-turno" id="print-turno">— turno</div>
-    <div class="cupom-linha-dupla">--------------------------------</div>
-    <div class="cupom-valor" id="print-valor">R$ 0,00</div>
-    <div class="cupom-linha-dupla">--------------------------------</div>
-    <div class="cupom-info"><span>Data:</span><span id="print-data">—</span></div>
-    <div class="cupom-info"><span>Horário:</span><span id="print-hora">—</span></div>
-    <div class="cupom-info"><span>ID Mercado Pago:</span><span id="print-id">—</span></div>
-    <div class="cupom-linha-dupla">================================</div>
-  </div>
-
-  <!-- ============ TELA 5: LOGIN ADMIN ============ -->
-  <section id="tela-admin-login" class="card hidden">
-    <div class="step-label">Acesso</div>
-    <h1>Área do administrador</h1>
-    <p class="subtitle">Informe a senha de administrador para continuar.</p>
-
-    <div class="field">
-      <label for="input-admin-senha">Senha de administrador</label>
-      <input id="input-admin-senha" type="password" placeholder="••••••" />
+  <!-- ============ ADMIN: SENHA ============ -->
+  <section id="tela-admin-senha" class="tela hidden">
+    <div class="rotulo amb">Acesso do administrador</div>
+    <h1>Senha de administrador</h1>
+    <p class="sub">Digite a senha e pressione ENTER.</p>
+    <div class="visor">
+      <input id="input-admin-senha" class="senha-dots" type="password" inputmode="numeric" placeholder="••••" autocomplete="off" />
     </div>
-    <div id="erro-admin-login" class="erro">Senha incorreta.</div>
-
-    <button class="btn" id="btn-admin-entrar">Entrar</button>
-    <button class="btn-ghost" id="btn-voltar-inicio-2">Voltar</button>
+    <div id="erro-admin-senha" class="erro-box">Senha incorreta.</div>
   </section>
 
-  <!-- ============ TELA 6: PAINEL ADMIN ============ -->
-  <section id="tela-admin-painel" class="card hidden">
-    <div class="step-label">Administrador</div>
-    <h1>Painel</h1>
-    <p class="subtitle">Gerencie os caixas e veja o histórico de Pix.</p>
-
-    <!-- Criar caixa -->
-    <div class="admin-secao">
-      <div class="admin-secao-titulo">Criar novo caixa</div>
-      <div class="field">
-        <label for="novo-caixa-id">Número do caixa</label>
-        <input id="novo-caixa-id" type="number" inputmode="numeric" placeholder="Ex: 12" />
-      </div>
-      <div class="field">
-        <label for="novo-caixa-senha">Senha</label>
-        <input id="novo-caixa-senha" type="password" placeholder="••••••" />
-      </div>
-      <div id="erro-novo-caixa" class="erro">Não foi possível criar o caixa.</div>
-      <div id="ok-novo-caixa" class="aviso-ok">Caixa criado com sucesso.</div>
-      <button class="btn" id="btn-criar-caixa">Criar caixa</button>
+  <!-- ============ ADMIN: MENU ============ -->
+  <section id="tela-admin-menu" class="tela hidden">
+    <div class="rotulo amb">Administrador</div>
+    <h1>O que você quer fazer?</h1>
+    <p class="sub">Pressione o número correspondente.</p>
+    <div class="opcoes">
+      <button class="opcao" data-key="1">
+        <div class="tecla grande">1</div>
+        <div class="icone"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div class="texto"><div class="titulo">Criar caixa</div><div class="desc">Cadastrar um novo número de caixa</div></div>
+      </button>
+      <button class="opcao" data-key="2">
+        <div class="tecla grande">2</div>
+        <div class="icone"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="7" width="18" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M7 7V5.5C7 4.67 7.67 4 8.5 4H15.5C16.33 4 17 4.67 17 5.5V7" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <div class="texto"><div class="titulo">Caixas cadastrados</div><div class="desc">Ver e desativar caixas existentes</div></div>
+      </button>
+      <button class="opcao" data-key="3">
+        <div class="tecla grande">3</div>
+        <div class="icone"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19V5M4 19H20M8 19V11M12 19V7M16 19V13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="texto"><div class="titulo">Histórico de Pix</div><div class="desc">Ver, reimprimir ou excluir cobranças</div></div>
+      </button>
     </div>
-
-    <!-- Lista de caixas -->
-    <div class="admin-secao">
-      <div class="admin-secao-titulo">Caixas cadastrados</div>
-      <div id="lista-caixas" class="lista">
-        <div class="vazio">Carregando...</div>
-      </div>
-    </div>
-
-    <!-- Historico -->
-    <div class="admin-secao">
-      <div class="admin-secao-titulo">Histórico de Pix</div>
-      <div class="field">
-        <label for="hist-select-caixa">Caixa</label>
-        <select id="hist-select-caixa">
-          <option value="">Selecione um caixa</option>
-        </select>
-      </div>
-      <div class="field" id="hist-mes-wrap" style="display:none;">
-        <label for="hist-select-mes">Mês</label>
-        <select id="hist-select-mes">
-          <option value="">Selecione um mês</option>
-        </select>
-      </div>
-
-      <div id="hist-resumo" class="lista hidden"></div>
-      <div id="hist-detalhe-wrap" class="hidden" style="margin-top:14px;">
-        <div class="admin-secao-titulo" id="hist-detalhe-titulo">Detalhe do dia</div>
-        <div id="hist-detalhe" class="lista"></div>
-      </div>
-    </div>
-
-    <button class="btn-ghost" id="btn-sair-admin" style="margin-top:26px;">Sair</button>
   </section>
 
-  <footer>Super José Supermercado &middot; Pix automático</footer>
+  <!-- ============ ADMIN: CRIAR CAIXA — NUMERO ============ -->
+  <section id="tela-admin-criar-numero" class="tela hidden">
+    <div class="rotulo amb">Criar caixa · etapa 1 de 2</div>
+    <h1>Número do novo caixa</h1>
+    <p class="sub">Digite o número e pressione ENTER.</p>
+    <div class="visor">
+      <input id="input-novo-caixa-id" type="text" inputmode="numeric" maxlength="4" placeholder="00" autocomplete="off" />
+    </div>
+    <div id="erro-novo-caixa-numero" class="erro-box">Informe um número de caixa.</div>
+  </section>
+
+  <!-- ============ ADMIN: CRIAR CAIXA — SENHA ============ -->
+  <section id="tela-admin-criar-senha" class="tela hidden">
+    <div class="rotulo amb">Criar caixa · etapa 2 de 2</div>
+    <h1 id="titulo-nova-senha">Senha do caixa</h1>
+    <p class="sub">Defina a senha e pressione ENTER.</p>
+    <div class="visor">
+      <input id="input-novo-caixa-senha" class="senha-dots" type="password" inputmode="numeric" placeholder="••••" autocomplete="off" />
+    </div>
+    <div id="erro-novo-caixa-senha" class="erro-box">Não foi possível criar o caixa.</div>
+  </section>
+
+  <!-- ============ ADMIN: CRIAR CAIXA — CONFIRMACAO ============ -->
+  <section id="tela-admin-criar-ok" class="tela hidden">
+    <div class="marca-check">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="titulo-central" id="titulo-criar-ok">Caixa criado</div>
+    <div class="sub-central">Já pode ser usado para login de operador.</div>
+    <div class="opcoes">
+      <button class="opcao" data-key="1">
+        <div class="tecla grande">1</div>
+        <div class="texto"><div class="titulo">Criar outro caixa</div></div>
+      </button>
+      <button class="opcao" data-key="2">
+        <div class="tecla grande">2</div>
+        <div class="texto"><div class="titulo">Voltar ao menu</div></div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ ADMIN: LISTA DE CAIXAS ============ -->
+  <section id="tela-admin-caixas" class="tela hidden">
+    <div class="rotulo amb">Caixas cadastrados</div>
+    <h1>Selecione um caixa</h1>
+    <p class="dica-navegacao">Use as setas ↑ ↓ para navegar e ENTER para abrir. Números abrem direto.</p>
+    <div id="lista-admin-caixas" class="lista"><div class="vazio">Carregando…</div></div>
+  </section>
+
+  <!-- ============ ADMIN: DETALHE DE UM CAIXA ============ -->
+  <section id="tela-admin-caixa-detalhe" class="tela hidden">
+    <div class="rotulo amb">Caixa selecionado</div>
+    <h1 id="titulo-caixa-detalhe">Caixa 12</h1>
+    <p class="sub" id="status-caixa-detalhe">Ativo</p>
+    <div class="opcoes" id="opcoes-caixa-detalhe"></div>
+  </section>
+
+  <!-- ============ ADMIN: HISTORICO — SELECIONAR CAIXA ============ -->
+  <section id="tela-hist-caixa" class="tela hidden">
+    <div class="rotulo amb">Histórico de Pix · etapa 1 de 4</div>
+    <h1>De qual caixa?</h1>
+    <p class="dica-navegacao">Use as setas ↑ ↓ e ENTER, ou digite o número da lista.</p>
+    <div id="lista-hist-caixa" class="lista"><div class="vazio">Carregando…</div></div>
+  </section>
+
+  <!-- ============ ADMIN: HISTORICO — SELECIONAR MES ============ -->
+  <section id="tela-hist-mes" class="tela hidden">
+    <div class="rotulo amb">Histórico de Pix · etapa 2 de 4</div>
+    <h1>Qual mês?</h1>
+    <p class="dica-navegacao">Use as setas ↑ ↓ e ENTER, ou digite o número da lista.</p>
+    <div id="lista-hist-mes" class="lista"><div class="vazio">Carregando…</div></div>
+  </section>
+
+  <!-- ============ ADMIN: HISTORICO — DIAS DO MES ============ -->
+  <section id="tela-hist-dias" class="tela hidden">
+    <div class="rotulo amb">Histórico de Pix · etapa 3 de 4</div>
+    <h1 id="titulo-hist-dias">Dias com Pix aprovado</h1>
+    <p class="dica-navegacao">Use as setas ↑ ↓ e ENTER, ou digite o número da lista.</p>
+    <div id="lista-hist-dias" class="lista"><div class="vazio">Carregando…</div></div>
+  </section>
+
+  <!-- ============ ADMIN: HISTORICO — PIX DO DIA ============ -->
+  <section id="tela-hist-pix" class="tela hidden">
+    <div class="rotulo amb">Histórico de Pix · etapa 4 de 4</div>
+    <h1 id="titulo-hist-pix">Pix do dia</h1>
+    <p class="dica-navegacao">Use as setas ↑ ↓ e ENTER para abrir, ou digite o número da lista.</p>
+    <div id="lista-hist-pix" class="lista"><div class="vazio">Carregando…</div></div>
+  </section>
+
+  <!-- ============ ADMIN: DETALHE DE UM PIX (COMPROVANTE) ============ -->
+  <section id="tela-hist-detalhe" class="tela hidden">
+    <div class="rotulo amb">Comprovante</div>
+    <h1>Pix selecionado</h1>
+    <div class="recibo" id="recibo-hist-detalhe"></div>
+    <div class="opcoes">
+      <button class="opcao" data-key="1">
+        <div class="tecla grande">1</div>
+        <div class="texto"><div class="titulo">Reimprimir comprovante</div></div>
+      </button>
+      <button class="opcao" data-key="2">
+        <div class="tecla grande">2</div>
+        <div class="texto"><div class="titulo">Excluir do histórico</div></div>
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<div class="rodape" id="rodape"></div>
+
+<!-- ============ AREA DE IMPRESSAO ============ -->
+<div id="area-impressao">
+  <div class="cupom-loja">SUPER JOSE SUPERMERCADO</div>
+  <div class="cupom-linha-dupla">================================</div>
+  <div class="cupom-titulo">PIX CONFIRMADO</div>
+  <div class="cupom-linha-dupla">================================</div>
+  <div class="cupom-caixa" id="print-caixa">Caixa —</div>
+  <div class="cupom-turno" id="print-turno">— turno</div>
+  <div class="cupom-linha-dupla">--------------------------------</div>
+  <div class="cupom-valor" id="print-valor">R$ 0,00</div>
+  <div class="cupom-linha-dupla">--------------------------------</div>
+  <div class="cupom-info"><span>Data:</span><span id="print-data">—</span></div>
+  <div class="cupom-info"><span>Horário:</span><span id="print-hora">—</span></div>
+  <div class="cupom-info"><span>ID Mercado Pago:</span><span id="print-id">—</span></div>
+  <div class="cupom-linha-dupla">================================</div>
 </div>
 
 <script>
-  // ===================================================================
-  // CONFIG — ajuste conforme onde o backend estiver rodando
-  // ===================================================================
-  const API_BASE = ''; // ex: 'https://seu-backend.exemplo.com' — vazio = mesmo host
+/* =========================================================================
+   CONFIG
+   ========================================================================= */
+const API_BASE = ''; // vazio = mesmo host
 
-  // ===================================================================
-  // Estado em memória (nada de localStorage)
-  // ===================================================================
-  let estado = {
-    token: null,
-    caixaId: null,
-    caixaNome: null,
-    turno: null,
-    valorCentavos: 0,
-    ultimoComprovante: null,
-    externalReference: null,
-    pollTimer: null,
-    adminSenha: null,
-    caixasCache: [],
-    histCaixaId: null,
-  };
+/* =========================================================================
+   ESTADO EM MEMORIA (nada de localStorage)
+   ========================================================================= */
+let estado = {
+  token: null,
+  caixaId: null,
+  caixaNome: null,
+  turno: null,
+  valorCentavos: 0,
+  ultimoComprovante: null,
+  externalReference: null,
+  pollTimer: null,
+  adminSenha: null,
+  caixasCache: [],
+  novoCaixaId: null,
+  histCaixaId: null,
+  histCaixaNome: null,
+  histMes: null,
+  histDia: null,
+  histPixSelecionado: null,
+};
 
-  const telas = {
-    inicio: document.getElementById('tela-inicio'),
-    login: document.getElementById('tela-login'),
-    turno: document.getElementById('tela-turno'),
-    valor: document.getElementById('tela-valor'),
-    qr: document.getElementById('tela-qr'),
-    confirmado: document.getElementById('tela-confirmado'),
-    adminLogin: document.getElementById('tela-admin-login'),
-    adminPainel: document.getElementById('tela-admin-painel'),
-  };
+function formatarMoeda(v){
+  return Number(v).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+}
 
-  function mostrarTela(nome){
-    Object.values(telas).forEach(t => t.classList.add('hidden'));
-    telas[nome].classList.remove('hidden');
+/* =========================================================================
+   MOTOR DE TELAS
+   Cada tela sabe: como aparecer (onShow), o que mostrar no rodape (teclas),
+   e o que fazer quando ESC e pressionado (onEsc). Uma pilha guarda de onde
+   viemos, pra ESC sempre voltar um passo, em qualquer parte do sistema.
+   ========================================================================= */
+const pilha = [];
+let telaAtual = null;
+
+const TELAS = {}; // preenchido abaixo, por tela
+
+function registrarTela(nome, cfg){ TELAS[nome] = cfg; }
+
+function irPara(nome, payload){
+  if (telaAtual) pilha.push(telaAtual);
+  mostrarTela(nome, payload);
+}
+
+function voltar(){
+  const anterior = pilha.pop() || 'inicio';
+  mostrarTela(anterior);
+}
+
+function reiniciarPilha(nome, payload){
+  pilha.length = 0;
+  mostrarTela(nome, payload);
+}
+
+function mostrarTela(nome, payload){
+  if (telaAtual && TELAS[telaAtual] && TELAS[telaAtual].onLeave) {
+    TELAS[telaAtual].onLeave();
+  }
+  document.querySelectorAll('.tela').forEach(el => el.classList.add('hidden'));
+  document.getElementById(TELAS[nome].elId).classList.remove('hidden');
+  telaAtual = nome;
+  const cfg = TELAS[nome];
+  document.getElementById('trilha').textContent = (cfg.trilha || '').toUpperCase();
+  renderRodape(cfg);
+  if (cfg.onShow) cfg.onShow(payload);
+  const foco = document.getElementById(TELAS[nome].elId).querySelector('input');
+  if (foco) setTimeout(() => foco.focus(), 30);
+}
+
+function renderRodape(cfg){
+  const rodape = document.getElementById('rodape');
+  const dicas = typeof cfg.rodape === 'function' ? cfg.rodape() : (cfg.rodape || []);
+  rodape.innerHTML = dicas.map(d => `
+    <div class="dica-tecla"><div class="tecla ${d.cor||''}">${d.tecla}</div><span>${d.texto}</span></div>
+  `).join('');
+}
+
+/* =========================================================================
+   COMPONENTE: LISTA NAVEGAVEL (setas + numeros)
+   ========================================================================= */
+function criarListaNavegavel(containerId, itens, opts){
+  const container = document.getElementById(containerId);
+  opts = opts || {};
+  let indiceAtivo = 0;
+
+  if (!itens.length) {
+    container.innerHTML = `<div class="vazio">${opts.vazio || 'Nada encontrado.'}</div>`;
+    return { onArrow(){}, onEnter(){}, onNumero(){} };
   }
 
-  function formatarMoeda(valorNumerico){
-    return Number(valorNumerico).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+  function render(){
+    container.innerHTML = itens.map((it, i) => `
+      <div class="item-lista ${i === indiceAtivo ? 'ativo' : ''}" data-idx="${i}">
+        <span class="num mono">${i < 9 ? (i+1) : '·'}</span>
+        <div class="info">
+          <span class="principal">${it.principal}</span>
+          ${it.secundario ? `<span class="secundario">${it.secundario}</span>` : ''}
+        </div>
+        ${it.destaque ? `<span class="destaque mono">${it.destaque}</span>` : ''}
+        ${it.tagHtml || ''}
+      </div>
+    `).join('');
+  }
+  render();
+
+  return {
+    onArrow(delta){
+      indiceAtivo = Math.max(0, Math.min(itens.length - 1, indiceAtivo + delta));
+      render();
+      const ativoEl = container.querySelector('.item-lista.ativo');
+      if (ativoEl) ativoEl.scrollIntoView({ block: 'nearest' });
+    },
+    onEnter(){
+      if (opts.onSelect) opts.onSelect(itens[indiceAtivo], indiceAtivo);
+    },
+    onNumero(n){
+      const i = n - 1;
+      if (i >= 0 && i < itens.length && i < 9) {
+        indiceAtivo = i;
+        render();
+        if (opts.onSelect) opts.onSelect(itens[i], i);
+      }
+    },
+  };
+}
+
+let listaAtiva = null; // controlador da lista da tela atual, se houver
+
+/* =========================================================================
+   ROTEADOR GLOBAL DE TECLADO
+   Digitos 1-9 acionam [data-key], ENTER aciona a acao principal da tela
+   (ou o item ativo de uma lista), ESC sempre volta um passo, setas
+   navegam listas. Enquanto o foco esta num campo de texto, os digitos
+   continuam indo pro campo normalmente (nao acionam [data-key]).
+   ========================================================================= */
+document.addEventListener('keydown', (e) => {
+  const cfg = TELAS[telaAtual];
+  if (!cfg) return;
+  const noCampo = document.activeElement && document.activeElement.tagName === 'INPUT';
+
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    if (cfg.onEsc) cfg.onEsc(); else voltar();
+    return;
   }
 
-  // ===================================================================
-  // Mascara de valor: digita so numeros, o campo formata sozinho como
-  // dinheiro (os digitos entram da direita pra esquerda, tipo maquininha).
-  // estado.valorCentavos é a fonte da verdade — é o que vai pro backend.
-  // ===================================================================
-  const inputValor = document.getElementById('input-valor');
-  inputValor.addEventListener('input', (e) => {
-    const somenteDigitos = e.target.value.replace(/\D/g, '');
-    estado.valorCentavos = somenteDigitos ? parseInt(somenteDigitos, 10) : 0;
-    e.target.value = estado.valorCentavos > 0 ? formatarMoeda(estado.valorCentavos / 100) : '';
-  });
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    piscarTecla('.tecla.ir');
+    if (listaAtiva) { listaAtiva.onEnter(); return; }
+    if (cfg.onEnter) cfg.onEnter();
+    return;
+  }
 
-  // ===================================================================
-  // TELA 0 — Inicio
-  // ===================================================================
-  document.getElementById('btn-ir-operador').addEventListener('click', () => {
-    mostrarTela('login');
-  });
-  document.getElementById('btn-ir-admin').addEventListener('click', () => {
-    mostrarTela('adminLogin');
-  });
-  document.getElementById('btn-voltar-inicio-1').addEventListener('click', () => {
-    mostrarTela('inicio');
-  });
-  document.getElementById('btn-voltar-inicio-2').addEventListener('click', () => {
-    mostrarTela('inicio');
-  });
+  if (listaAtiva && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    e.preventDefault();
+    listaAtiva.onArrow(e.key === 'ArrowDown' ? 1 : -1);
+    return;
+  }
 
-  // ===================================================================
-  // TELA 1 — Login do operador
-  // ===================================================================
-  document.getElementById('btn-login').addEventListener('click', async () => {
+  if (/^[1-9]$/.test(e.key) && !noCampo) {
+    if (listaAtiva) { listaAtiva.onNumero(Number(e.key)); return; }
+    const alvo = document.querySelector(`#${cfg.elId} [data-key="${e.key}"]`);
+    if (alvo) { piscarBotao(alvo); alvo.click(); }
+  }
+});
+
+function piscarBotao(el){
+  const tecla = el.querySelector('.tecla');
+  if (!tecla) return;
+  tecla.classList.add('pressed');
+  setTimeout(() => tecla.classList.remove('pressed'), 90);
+}
+function piscarTecla(sel){
+  document.querySelectorAll(sel).forEach(t => {
+    t.classList.add('pressed');
+    setTimeout(() => t.classList.remove('pressed'), 90);
+  });
+}
+
+/* Liga cliques em [data-key] dentro de qualquer tela (mouse tambem funciona,
+   caso exista, mas nada depende dele). */
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-key]');
+  if (!btn) return;
+  const nome = telaAtual;
+  const cfg = TELAS[nome];
+  if (cfg && cfg.onOpcao) cfg.onOpcao(btn.dataset.key);
+});
+
+function mostrarErro(id, msg){
+  const el = document.getElementById(id);
+  if (msg) el.textContent = msg;
+  el.style.display = 'block';
+}
+function esconderErro(id){
+  document.getElementById(id).style.display = 'none';
+}
+
+/* =========================================================================
+   TELA: INICIO
+   ========================================================================= */
+registrarTela('inicio', {
+  elId: 'tela-inicio',
+  trilha: 'Início',
+  rodape: [
+    { tecla:'1', texto:'Operador' },
+    { tecla:'2', texto:'Administrador' },
+  ],
+  onOpcao(key){
+    if (key === '1') irPara('login-caixa');
+    if (key === '2') irPara('admin-senha');
+  },
+});
+
+/* =========================================================================
+   OPERADOR — LOGIN
+   ========================================================================= */
+registrarTela('login-caixa', {
+  elId: 'tela-login-caixa',
+  trilha: 'Operador · Caixa',
+  rodape: [ { tecla:'↵', texto:'Continuar', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ voltar(); },
+  onShow(){ esconderErro('erro-login-caixa'); document.getElementById('input-caixa').value=''; },
+  onEnter(){
     const caixaId = document.getElementById('input-caixa').value.trim();
+    esconderErro('erro-login-caixa');
+    if (!caixaId) { mostrarErro('erro-login-caixa', 'Digite o número do caixa.'); return; }
+    estado.caixaId = caixaId;
+    irPara('login-senha');
+  },
+});
+
+registrarTela('login-senha', {
+  elId: 'tela-login-senha',
+  trilha: 'Operador · Senha',
+  rodape: [ { tecla:'↵', texto:'Entrar', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ voltar(); },
+  onShow(){
+    esconderErro('erro-login-senha');
+    document.getElementById('input-senha').value = '';
+    document.getElementById('titulo-senha-caixa').textContent = `Senha do caixa ${estado.caixaId}`;
+  },
+  onLeave(){ document.getElementById('input-senha').value = ''; },
+  async onEnter(){
     const senha = document.getElementById('input-senha').value;
-    const erroEl = document.getElementById('erro-login');
-    erroEl.style.display = 'none';
-
-    if (!caixaId || !senha) {
-      erroEl.textContent = 'Preencha o número do caixa e a senha.';
-      erroEl.style.display = 'block';
-      return;
-    }
-
+    esconderErro('erro-login-senha');
+    if (!senha) { mostrarErro('erro-login-senha', 'Digite a senha.'); return; }
     try {
       const resp = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caixaId: Number(caixaId), senha }),
+        body: JSON.stringify({ caixaId: Number(estado.caixaId), senha }),
       });
       const data = await resp.json();
-
-      if (!resp.ok) {
-        erroEl.textContent = data.erro || 'Não foi possível entrar.';
-        erroEl.style.display = 'block';
-        return;
-      }
-
+      if (!resp.ok) { mostrarErro('erro-login-senha', data.erro || 'Caixa ou senha incorretos.'); return; }
       estado.token = data.token;
       estado.caixaId = data.caixa.id;
       estado.caixaNome = data.caixa.nome;
-
-      document.getElementById('tag-caixa-nome-turno').textContent = estado.caixaNome;
-      mostrarTela('turno');
+      reiniciarPilha('turno');
     } catch (e) {
-      erroEl.textContent = 'Erro de conexão com o servidor.';
-      erroEl.style.display = 'block';
+      mostrarErro('erro-login-senha', 'Erro de conexão com o servidor.');
     }
-  });
+  },
+});
 
-  document.getElementById('btn-voltar-login').addEventListener('click', () => {
-    mostrarTela('login');
-  });
+/* =========================================================================
+   TURNO
+   ========================================================================= */
+registrarTela('turno', {
+  elId: 'tela-turno',
+  trilha: 'Operador · Turno',
+  rodape: [ { tecla:'1', texto:'1º turno' }, { tecla:'2', texto:'2º turno' } ],
+  onShow(){ document.getElementById('tag-caixa-nome-turno').textContent = estado.caixaNome; },
+  onOpcao(key){
+    if (key !== '1' && key !== '2') return;
+    estado.turno = key;
+    document.getElementById('tag-caixa-nome').textContent = `${estado.caixaNome} · ${key}º turno`;
+    reiniciarPilha('valor');
+  },
+});
 
-  // ===================================================================
-  // TELA 1.5 — Selecao de turno
-  // ===================================================================
-  function selecionarTurno(turno){
-    estado.turno = turno;
-    document.getElementById('tag-caixa-nome').textContent =
-      `${estado.caixaNome} · ${turno}º turno`;
-    mostrarTela('valor');
-  }
-  document.getElementById('btn-turno-1').addEventListener('click', () => selecionarTurno('1'));
-  document.getElementById('btn-turno-2').addEventListener('click', () => selecionarTurno('2'));
-
-  document.getElementById('btn-logout').addEventListener('click', () => {
-    estado.token = null;
-    estado.caixaId = null;
-    estado.turno = null;
+/* =========================================================================
+   VALOR / GERAR PIX
+   ========================================================================= */
+registrarTela('valor', {
+  elId: 'tela-valor',
+  trilha: 'Operador · Valor',
+  rodape: [ { tecla:'↵', texto:'Gerar Pix', cor:'ir' }, { tecla:'ESC', texto:'Sair do caixa' } ],
+  onEsc(){
+    estado.token = null; estado.caixaId = null; estado.turno = null; estado.valorCentavos = 0;
+    reiniciarPilha('inicio');
+  },
+  onShow(){
+    esconderErro('erro-valor');
     estado.valorCentavos = 0;
-    document.getElementById('input-senha').value = '';
     document.getElementById('input-valor').value = '';
-    mostrarTela('inicio');
-  });
-
-  // ===================================================================
-  // TELA 2 — Gerar cobrança
-  // ===================================================================
-  document.getElementById('btn-gerar').addEventListener('click', async () => {
-    // valorCentavos é inteiro (nunca ponto flutuante) — evita erro de
-    // arredondamento. O valor em reais so eh calculado aqui, na hora de enviar.
+  },
+  async onEnter(){
     const valor = Number((estado.valorCentavos / 100).toFixed(2));
-    const erroEl = document.getElementById('erro-valor');
-    erroEl.style.display = 'none';
-
-    if (!valor || valor <= 0) {
-      erroEl.textContent = 'Informe um valor válido.';
-      erroEl.style.display = 'block';
-      return;
-    }
-
+    esconderErro('erro-valor');
+    if (!valor || valor <= 0) { mostrarErro('erro-valor', 'Informe um valor válido.'); return; }
     try {
       const resp = await fetch(`${API_BASE}/pix/gerar`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${estado.token}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${estado.token}` },
         body: JSON.stringify({ valor, turno: estado.turno }),
       });
       const data = await resp.json();
-
       if (!resp.ok) {
-        erroEl.textContent = data.detalhe
-          ? `${data.erro}: ${JSON.stringify(data.detalhe)}`
-          : (data.erro || 'Não foi possível gerar o Pix.');
-        erroEl.style.display = 'block';
+        mostrarErro('erro-valor', data.detalhe ? `${data.erro}: ${JSON.stringify(data.detalhe)}` : (data.erro || 'Não foi possível gerar o Pix.'));
         return;
       }
-
       estado.externalReference = data.externalReference;
       document.getElementById('qr-img').src = `data:image/png;base64,${data.qrCodeBase64}`;
       document.getElementById('qr-valor').textContent = formatarMoeda(valor);
-      mostrarTela('qr');
+      irPara('qr');
       iniciarPolling();
     } catch (e) {
-      erroEl.textContent = 'Erro de conexão com o servidor.';
-      erroEl.style.display = 'block';
+      mostrarErro('erro-valor', 'Erro de conexão com o servidor.');
     }
-  });
+  },
+});
 
-  document.getElementById('btn-cancelar-qr').addEventListener('click', () => {
-    pararPolling();
-    mostrarTela('valor');
-  });
+const inputValor = document.getElementById('input-valor');
+inputValor.addEventListener('input', (e) => {
+  const digitos = e.target.value.replace(/\D/g, '');
+  estado.valorCentavos = digitos ? parseInt(digitos, 10) : 0;
+  e.target.value = estado.valorCentavos > 0 ? formatarMoeda(estado.valorCentavos / 100) : '';
+});
+document.getElementById('input-caixa').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '');
+});
+document.getElementById('input-novo-caixa-id').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '');
+});
 
-  // ===================================================================
-  // TELA 3 — Aguardando pagamento (polling de status)
-  // ===================================================================
-  function iniciarPolling(){
-    estado.pollTimer = setInterval(async () => {
-      try {
-        const resp = await fetch(`${API_BASE}/pix/status/${estado.externalReference}`, {
-          headers: { 'Authorization': `Bearer ${estado.token}` },
-        });
-        const data = await resp.json();
+/* =========================================================================
+   QR / AGUARDANDO
+   ========================================================================= */
+registrarTela('qr', {
+  elId: 'tela-qr',
+  trilha: 'Operador · Aguardando',
+  rodape: [ { tecla:'ESC', texto:'Cancelar cobrança' } ],
+  onEsc(){ pararPolling(); voltar(); },
+  onLeave(){ pararPolling(); },
+});
 
-        if (data.status === 'aprovado') {
-          pararPolling();
-          const dataPagamento = new Date(data.pagoEm);
-          const horaFormatada = dataPagamento.toLocaleTimeString('pt-BR');
-          const dataFormatada = dataPagamento.toLocaleDateString('pt-BR');
-          document.getElementById('rec-caixa').textContent = estado.caixaNome;
-          document.getElementById('rec-valor').textContent = formatarMoeda(data.valor);
-          document.getElementById('rec-hora').textContent = horaFormatada;
-          document.getElementById('rec-id').textContent = data.mpPaymentId;
-          mostrarTela('confirmado');
-          estado.ultimoComprovante = {
-            caixaNome: estado.caixaNome,
-            turno: estado.turno,
-            valor: data.valor,
-            horario: horaFormatada,
-            data: dataFormatada,
-            id: data.mpPaymentId,
-          };
-          imprimirComprovante(estado.ultimoComprovante);
-        }
-      } catch (e) {
-        // silencioso — tenta de novo no proximo ciclo
-      }
-    }, 1500);
-  }
-
-  function pararPolling(){
-    if (estado.pollTimer) clearInterval(estado.pollTimer);
-    estado.pollTimer = null;
-  }
-
-  // ===================================================================
-  // Impressao — preenche a area escondida (#area-impressao) com os
-  // dados do comprovante e abre o dialogo de impressao do navegador.
-  // Funciona com qualquer impressora ja instalada no Windows, termica
-  // ou nao — nao precisa de nenhum programa rodando no PC.
-  // ===================================================================
-  function imprimirComprovante(dados){
-    document.getElementById('print-caixa').textContent = dados.caixaNome;
-    document.getElementById('print-turno').textContent = `${dados.turno}º TURNO`;
-    document.getElementById('print-valor').textContent = formatarMoeda(dados.valor);
-    document.getElementById('print-data').textContent = dados.data;
-    document.getElementById('print-hora').textContent = dados.horario;
-    document.getElementById('print-id').textContent = dados.id;
-    window.print();
-  }
-
-  // ===================================================================
-  // TELA 4 — Novo pagamento
-  // ===================================================================
-  document.getElementById('btn-novo').addEventListener('click', () => {
-    document.getElementById('input-valor').value = '';
-    estado.valorCentavos = 0;
-    mostrarTela('valor');
-  });
-
-  document.getElementById('btn-reimprimir').addEventListener('click', () => {
-    if (!estado.ultimoComprovante) return;
-    imprimirComprovante(estado.ultimoComprovante);
-  });
-
-  // ===================================================================
-  // TELA 5 — Login admin
-  // ===================================================================
-  document.getElementById('btn-admin-entrar').addEventListener('click', async () => {
-    const senha = document.getElementById('input-admin-senha').value;
-    const erroEl = document.getElementById('erro-admin-login');
-    erroEl.style.display = 'none';
-
-    if (!senha) {
-      erroEl.textContent = 'Informe a senha de administrador.';
-      erroEl.style.display = 'block';
-      return;
-    }
-
+function iniciarPolling(){
+  estado.pollTimer = setInterval(async () => {
     try {
-      const resp = await fetch(`${API_BASE}/admin/caixas`, {
-        headers: { 'x-admin-senha': senha },
+      const resp = await fetch(`${API_BASE}/pix/status/${estado.externalReference}`, {
+        headers: { 'Authorization': `Bearer ${estado.token}` },
       });
-
-      if (!resp.ok) {
-        erroEl.textContent = 'Senha incorreta.';
-        erroEl.style.display = 'block';
-        return;
+      const data = await resp.json();
+      if (data.status === 'aprovado') {
+        pararPolling();
+        const dataPagamento = new Date(data.pagoEm);
+        const horaFormatada = dataPagamento.toLocaleTimeString('pt-BR');
+        const dataFormatada = dataPagamento.toLocaleDateString('pt-BR');
+        document.getElementById('rec-caixa').textContent = estado.caixaNome;
+        document.getElementById('rec-valor').textContent = formatarMoeda(data.valor);
+        document.getElementById('rec-hora').textContent = horaFormatada;
+        document.getElementById('rec-id').textContent = data.mpPaymentId;
+        estado.ultimoComprovante = {
+          caixaNome: estado.caixaNome, turno: estado.turno, valor: data.valor,
+          horario: horaFormatada, data: dataFormatada, id: data.mpPaymentId,
+        };
+        reiniciarPilha('confirmado');
+        imprimirComprovante(estado.ultimoComprovante);
       }
+    } catch (e) { /* tenta de novo no proximo ciclo */ }
+  }, 1500);
+}
+function pararPolling(){
+  if (estado.pollTimer) clearInterval(estado.pollTimer);
+  estado.pollTimer = null;
+}
 
+function imprimirComprovante(dados){
+  document.getElementById('print-caixa').textContent = dados.caixaNome;
+  document.getElementById('print-turno').textContent = `${dados.turno}º TURNO`;
+  document.getElementById('print-valor').textContent = formatarMoeda(dados.valor);
+  document.getElementById('print-data').textContent = dados.data;
+  document.getElementById('print-hora').textContent = dados.horario;
+  document.getElementById('print-id').textContent = dados.id;
+  window.print();
+}
+
+/* =========================================================================
+   CONFIRMADO
+   ========================================================================= */
+registrarTela('confirmado', {
+  elId: 'tela-confirmado',
+  trilha: 'Operador · Confirmado',
+  rodape: [ { tecla:'1', texto:'Novo pagamento' }, { tecla:'2', texto:'Reimprimir' } ],
+  onEsc(){ reiniciarPilha('valor'); },
+  onOpcao(key){
+    if (key === '1') reiniciarPilha('valor');
+    if (key === '2' && estado.ultimoComprovante) imprimirComprovante(estado.ultimoComprovante);
+  },
+});
+
+/* =========================================================================
+   ADMIN — LOGIN
+   ========================================================================= */
+registrarTela('admin-senha', {
+  elId: 'tela-admin-senha',
+  trilha: 'Administrador · Acesso',
+  rodape: [ { tecla:'↵', texto:'Entrar', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ voltar(); },
+  onShow(){ esconderErro('erro-admin-senha'); document.getElementById('input-admin-senha').value=''; },
+  onLeave(){ document.getElementById('input-admin-senha').value=''; },
+  async onEnter(){
+    const senha = document.getElementById('input-admin-senha').value;
+    esconderErro('erro-admin-senha');
+    if (!senha) { mostrarErro('erro-admin-senha', 'Digite a senha de administrador.'); return; }
+    try {
+      const resp = await fetch(`${API_BASE}/admin/caixas`, { headers: { 'x-admin-senha': senha } });
+      if (!resp.ok) { mostrarErro('erro-admin-senha', 'Senha incorreta.'); return; }
+      const data = await resp.json();
       estado.adminSenha = senha;
-      document.getElementById('input-admin-senha').value = '';
-      mostrarTela('adminPainel');
-      carregarCaixasAdmin();
+      estado.caixasCache = data;
+      reiniciarPilha('admin-menu');
     } catch (e) {
-      erroEl.textContent = 'Erro de conexão com o servidor.';
-      erroEl.style.display = 'block';
+      mostrarErro('erro-admin-senha', 'Erro de conexão com o servidor.');
     }
-  });
+  },
+});
 
-  document.getElementById('btn-sair-admin').addEventListener('click', () => {
-    estado.adminSenha = null;
-    estado.caixasCache = [];
-    estado.histCaixaId = null;
-    document.getElementById('hist-select-mes').innerHTML = '<option value="">Selecione um mês</option>';
-    document.getElementById('hist-mes-wrap').style.display = 'none';
-    document.getElementById('hist-resumo').classList.add('hidden');
-    document.getElementById('hist-detalhe-wrap').classList.add('hidden');
-    mostrarTela('inicio');
-  });
+function headersAdmin(){ return { 'x-admin-senha': estado.adminSenha }; }
 
-  function headersAdmin(){
-    return { 'x-admin-senha': estado.adminSenha };
-  }
+/* =========================================================================
+   ADMIN — MENU
+   ========================================================================= */
+registrarTela('admin-menu', {
+  elId: 'tela-admin-menu',
+  trilha: 'Administrador · Menu',
+  rodape: [ { tecla:'1', texto:'Criar caixa' }, { tecla:'2', texto:'Caixas' }, { tecla:'3', texto:'Histórico' }, { tecla:'ESC', texto:'Sair' } ],
+  onEsc(){
+    estado.adminSenha = null; estado.caixasCache = [];
+    reiniciarPilha('inicio');
+  },
+  onOpcao(key){
+    if (key === '1') irPara('admin-criar-numero');
+    if (key === '2') irPara('admin-caixas');
+    if (key === '3') irPara('hist-caixa');
+  },
+});
 
-  // ===================================================================
-  // TELA 6 — Painel admin: criar / listar / desativar caixas
-  // ===================================================================
-  document.getElementById('btn-criar-caixa').addEventListener('click', async () => {
-    const caixaId = document.getElementById('novo-caixa-id').value.trim();
-    const senha = document.getElementById('novo-caixa-senha').value;
-    const erroEl = document.getElementById('erro-novo-caixa');
-    const okEl = document.getElementById('ok-novo-caixa');
-    erroEl.style.display = 'none';
-    okEl.style.display = 'none';
+/* =========================================================================
+   ADMIN — CRIAR CAIXA
+   ========================================================================= */
+registrarTela('admin-criar-numero', {
+  elId: 'tela-admin-criar-numero',
+  trilha: 'Criar caixa · Número',
+  rodape: [ { tecla:'↵', texto:'Continuar', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ voltar(); },
+  onShow(){ esconderErro('erro-novo-caixa-numero'); document.getElementById('input-novo-caixa-id').value=''; },
+  onEnter(){
+    const id = document.getElementById('input-novo-caixa-id').value.trim();
+    esconderErro('erro-novo-caixa-numero');
+    if (!id) { mostrarErro('erro-novo-caixa-numero', 'Informe um número de caixa.'); return; }
+    estado.novoCaixaId = id;
+    irPara('admin-criar-senha');
+  },
+});
 
-    if (!caixaId || !senha) {
-      erroEl.textContent = 'Preencha número e senha do caixa.';
-      erroEl.style.display = 'block';
-      return;
-    }
-
+registrarTela('admin-criar-senha', {
+  elId: 'tela-admin-criar-senha',
+  trilha: 'Criar caixa · Senha',
+  rodape: [ { tecla:'↵', texto:'Criar caixa', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ voltar(); },
+  onShow(){
+    esconderErro('erro-novo-caixa-senha');
+    document.getElementById('input-novo-caixa-senha').value = '';
+    document.getElementById('titulo-nova-senha').textContent = `Senha do caixa ${estado.novoCaixaId}`;
+  },
+  onLeave(){ document.getElementById('input-novo-caixa-senha').value=''; },
+  async onEnter(){
+    const senha = document.getElementById('input-novo-caixa-senha').value;
+    esconderErro('erro-novo-caixa-senha');
+    if (!senha) { mostrarErro('erro-novo-caixa-senha', 'Defina uma senha.'); return; }
     try {
       const resp = await fetch(`${API_BASE}/admin/caixas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headersAdmin() },
-        body: JSON.stringify({ caixaId: Number(caixaId), senha }),
+        body: JSON.stringify({ caixaId: Number(estado.novoCaixaId), senha }),
       });
       const data = await resp.json();
-
-      if (!resp.ok) {
-        erroEl.textContent = data.erro || 'Não foi possível criar o caixa.';
-        erroEl.style.display = 'block';
-        return;
-      }
-
-      okEl.textContent = 'Caixa criado com sucesso.';
-      okEl.style.display = 'block';
-      document.getElementById('novo-caixa-id').value = '';
-      document.getElementById('novo-caixa-senha').value = '';
-      carregarCaixasAdmin();
+      if (!resp.ok) { mostrarErro('erro-novo-caixa-senha', data.erro || 'Não foi possível criar o caixa.'); return; }
+      document.getElementById('titulo-criar-ok').textContent = `Caixa ${data.id} criado`;
+      reiniciarPilha('admin-criar-ok');
     } catch (e) {
-      erroEl.textContent = 'Erro de conexão com o servidor.';
-      erroEl.style.display = 'block';
+      mostrarErro('erro-novo-caixa-senha', 'Erro de conexão com o servidor.');
     }
-  });
+  },
+});
 
-  async function carregarCaixasAdmin(){
-    const listaEl = document.getElementById('lista-caixas');
-    listaEl.innerHTML = '<div class="vazio">Carregando...</div>';
+registrarTela('admin-criar-ok', {
+  elId: 'tela-admin-criar-ok',
+  trilha: 'Criar caixa · Concluído',
+  rodape: [ { tecla:'1', texto:'Criar outro' }, { tecla:'2', texto:'Voltar ao menu' } ],
+  onEsc(){ reiniciarPilha('admin-menu'); },
+  onOpcao(key){
+    if (key === '1') reiniciarPilha('admin-criar-numero');
+    if (key === '2') reiniciarPilha('admin-menu');
+  },
+});
 
+/* =========================================================================
+   ADMIN — LISTA DE CAIXAS (gerenciar)
+   ========================================================================= */
+registrarTela('admin-caixas', {
+  elId: 'tela-admin-caixas',
+  trilha: 'Caixas cadastrados',
+  rodape: [ { tecla:'↑↓', texto:'Navegar' }, { tecla:'↵', texto:'Abrir', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ listaAtiva = null; voltar(); },
+  async onShow(){
+    listaAtiva = null;
+    const container = document.getElementById('lista-admin-caixas');
+    container.innerHTML = '<div class="vazio">Carregando…</div>';
     try {
       const resp = await fetch(`${API_BASE}/admin/caixas`, { headers: headersAdmin() });
       const data = await resp.json();
-
-      if (!resp.ok) {
-        listaEl.innerHTML = '<div class="vazio">Não foi possível carregar os caixas.</div>';
-        return;
-      }
-
       estado.caixasCache = data;
-      renderizarListaCaixas(data);
-      renderizarSelectCaixasHistorico(data);
-    } catch (e) {
-      listaEl.innerHTML = '<div class="vazio">Erro de conexão com o servidor.</div>';
-    }
-  }
-
-  function renderizarListaCaixas(caixas){
-    const listaEl = document.getElementById('lista-caixas');
-
-    if (!caixas.length) {
-      listaEl.innerHTML = '<div class="vazio">Nenhum caixa cadastrado ainda.</div>';
-      return;
-    }
-
-    listaEl.innerHTML = '';
-    caixas.forEach(c => {
-      const item = document.createElement('div');
-      item.className = 'lista-item';
-      item.innerHTML = `
-        <div class="info">
-          <span class="principal">${c.nome}</span>
-          <span class="secundario">Caixa ${c.id} · <span class="${c.ativo ? 'tag-ativo' : 'tag-inativo'}">${c.ativo ? 'Ativo' : 'Desativado'}</span></span>
-        </div>
-        ${c.ativo ? `<button class="btn-sm btn-sm-danger" data-desativar="${c.id}">Desativar</button>` : ''}
-      `;
-      listaEl.appendChild(item);
-    });
-
-    listaEl.querySelectorAll('[data-desativar]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-desativar');
-        if (!confirm(`Desativar o caixa ${id}? Ele não vai conseguir mais logar.`)) return;
-
-        try {
-          const resp = await fetch(`${API_BASE}/admin/caixas/${id}`, {
-            method: 'DELETE',
-            headers: headersAdmin(),
-          });
-          if (resp.ok) carregarCaixasAdmin();
-        } catch (e) {
-          alert('Erro de conexão com o servidor.');
-        }
+      listaAtiva = criarListaNavegavel('lista-admin-caixas', data.map(c => ({
+        principal: c.nome,
+        secundario: `Caixa ${c.id}`,
+        tagHtml: `<span class="tag ${c.ativo ? 'ok' : 'off'}">${c.ativo ? 'Ativo' : 'Desativado'}</span>`,
+        _raw: c,
+      })), {
+        vazio: 'Nenhum caixa cadastrado ainda.',
+        onSelect(item){ irPara('admin-caixa-detalhe', item._raw); },
       });
-    });
-  }
-
-  function renderizarSelectCaixasHistorico(caixas){
-    const select = document.getElementById('hist-select-caixa');
-    const valorAtual = select.value;
-    select.innerHTML = '<option value="">Selecione um caixa</option>';
-    caixas.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = `${c.nome} (Caixa ${c.id})`;
-      select.appendChild(opt);
-    });
-    if (valorAtual) select.value = valorAtual;
-  }
-
-  // ===================================================================
-  // TELA 6 — Painel admin: historico
-  // ===================================================================
-  document.getElementById('hist-select-caixa').addEventListener('change', async (e) => {
-    const caixaId = e.target.value;
-    estado.histCaixaId = caixaId || null;
-
-    document.getElementById('hist-resumo').classList.add('hidden');
-    document.getElementById('hist-detalhe-wrap').classList.add('hidden');
-
-    const mesWrap = document.getElementById('hist-mes-wrap');
-    const mesSelect = document.getElementById('hist-select-mes');
-    mesSelect.innerHTML = '<option value="">Selecione um mês</option>';
-
-    if (!caixaId) {
-      mesWrap.style.display = 'none';
-      return;
+    } catch (e) {
+      container.innerHTML = '<div class="vazio">Erro de conexão com o servidor.</div>';
     }
+  },
+});
 
-    mesWrap.style.display = 'block';
-
+registrarTela('admin-caixa-detalhe', {
+  elId: 'tela-admin-caixa-detalhe',
+  trilha: 'Caixa · Detalhe',
+  rodape(){ return this._caixa && this._caixa.ativo
+    ? [ { tecla:'1', texto:'Desativar caixa' }, { tecla:'ESC', texto:'Voltar' } ]
+    : [ { tecla:'ESC', texto:'Voltar' } ];
+  },
+  onEsc(){ voltar(); },
+  onShow(caixa){
+    this._caixa = caixa;
+    document.getElementById('titulo-caixa-detalhe').textContent = `Caixa ${caixa.id} — ${caixa.nome}`;
+    document.getElementById('status-caixa-detalhe').textContent = caixa.ativo ? 'Ativo' : 'Desativado';
+    const opcoes = document.getElementById('opcoes-caixa-detalhe');
+    opcoes.innerHTML = caixa.ativo ? `
+      <button class="opcao" data-key="1">
+        <div class="tecla grande">1</div>
+        <div class="texto"><div class="titulo">Desativar caixa</div><div class="desc">Ele não vai conseguir mais logar</div></div>
+      </button>` : '';
+    renderRodape(TELAS['admin-caixa-detalhe']);
+  },
+  async onOpcao(key){
+    if (key !== '1' || !this._caixa || !this._caixa.ativo) return;
+    if (!confirm(`Desativar o caixa ${this._caixa.id}? Ele não vai conseguir mais logar.`)) return;
     try {
-      const resp = await fetch(`${API_BASE}/admin/historico/meses?caixaId=${caixaId}`, { headers: headersAdmin() });
+      const resp = await fetch(`${API_BASE}/admin/caixas/${this._caixa.id}`, { method:'DELETE', headers: headersAdmin() });
+      if (resp.ok) voltar();
+    } catch (e) { alert('Erro de conexão com o servidor.'); }
+  },
+});
+
+/* =========================================================================
+   ADMIN — HISTORICO DE PIX (4 etapas: caixa > mes > dia > pix)
+   ========================================================================= */
+registrarTela('hist-caixa', {
+  elId: 'tela-hist-caixa',
+  trilha: 'Histórico · Caixa',
+  rodape: [ { tecla:'↑↓', texto:'Navegar' }, { tecla:'↵', texto:'Escolher', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ listaAtiva = null; voltar(); },
+  async onShow(){
+    listaAtiva = null;
+    const container = document.getElementById('lista-hist-caixa');
+    let caixas = estado.caixasCache;
+    if (!caixas || !caixas.length) {
+      container.innerHTML = '<div class="vazio">Carregando…</div>';
+      try {
+        const resp = await fetch(`${API_BASE}/admin/caixas`, { headers: headersAdmin() });
+        caixas = await resp.json();
+        estado.caixasCache = caixas;
+      } catch (e) {
+        container.innerHTML = '<div class="vazio">Erro de conexão com o servidor.</div>';
+        return;
+      }
+    }
+    listaAtiva = criarListaNavegavel('lista-hist-caixa', caixas.map(c => ({
+      principal: c.nome, secundario: `Caixa ${c.id}`, _raw: c,
+    })), {
+      vazio: 'Nenhum caixa cadastrado ainda.',
+      onSelect(item){
+        estado.histCaixaId = item._raw.id;
+        estado.histCaixaNome = item._raw.nome;
+        irPara('hist-mes');
+      },
+    });
+  },
+});
+
+registrarTela('hist-mes', {
+  elId: 'tela-hist-mes',
+  trilha: 'Histórico · Mês',
+  rodape: [ { tecla:'↑↓', texto:'Navegar' }, { tecla:'↵', texto:'Escolher', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ listaAtiva = null; voltar(); },
+  async onShow(){
+    listaAtiva = null;
+    const container = document.getElementById('lista-hist-mes');
+    container.innerHTML = '<div class="vazio">Carregando…</div>';
+    try {
+      const resp = await fetch(`${API_BASE}/admin/historico/meses?caixaId=${estado.histCaixaId}`, { headers: headersAdmin() });
       const meses = await resp.json();
-
-      if (!resp.ok || !meses.length) {
-        mesSelect.innerHTML = '<option value="">Nenhum Pix registrado ainda</option>';
-        return;
-      }
-
-      meses.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m;
-        opt.textContent = m;
-        mesSelect.appendChild(opt);
+      listaAtiva = criarListaNavegavel('lista-hist-mes', meses.map(m => ({ principal: m })), {
+        vazio: 'Nenhum Pix registrado ainda para esse caixa.',
+        onSelect(item){ estado.histMes = item.principal; irPara('hist-dias'); },
       });
     } catch (e) {
-      mesSelect.innerHTML = '<option value="">Erro ao carregar meses</option>';
+      container.innerHTML = '<div class="vazio">Erro de conexão com o servidor.</div>';
     }
-  });
+  },
+});
 
-  document.getElementById('hist-select-mes').addEventListener('change', async (e) => {
-    const mes = e.target.value;
-    const resumoEl = document.getElementById('hist-resumo');
-    document.getElementById('hist-detalhe-wrap').classList.add('hidden');
-
-    if (!mes || !estado.histCaixaId) {
-      resumoEl.classList.add('hidden');
-      return;
-    }
-
-    resumoEl.classList.remove('hidden');
-    resumoEl.innerHTML = '<div class="vazio">Carregando...</div>';
-
+registrarTela('hist-dias', {
+  elId: 'tela-hist-dias',
+  trilha: 'Histórico · Dias',
+  rodape: [ { tecla:'↑↓', texto:'Navegar' }, { tecla:'↵', texto:'Escolher', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ listaAtiva = null; voltar(); },
+  async onShow(){
+    listaAtiva = null;
+    document.getElementById('titulo-hist-dias').textContent = `Dias com Pix em ${estado.histMes}`;
+    const container = document.getElementById('lista-hist-dias');
+    container.innerHTML = '<div class="vazio">Carregando…</div>';
     try {
-      const resp = await fetch(`${API_BASE}/admin/historico/resumo?caixaId=${estado.histCaixaId}&mes=${mes}`, { headers: headersAdmin() });
+      const resp = await fetch(`${API_BASE}/admin/historico/resumo?caixaId=${estado.histCaixaId}&mes=${estado.histMes}`, { headers: headersAdmin() });
       const dias = await resp.json();
-
-      if (!resp.ok) {
-        resumoEl.innerHTML = `<div class="vazio">Erro: ${dias.erro || 'falha ao carregar'}</div>`;
-        return;
-      }
-      if (!dias.length) {
-        resumoEl.innerHTML = '<div class="vazio">Nenhum Pix aprovado nesse mês.</div>';
-        return;
-      }
-
-      resumoEl.innerHTML = '';
-      dias.forEach(d => {
-        const item = document.createElement('div');
-        item.className = 'lista-item clicavel';
-        item.innerHTML = `
-          <div class="info">
-            <span class="principal">${new Date(d.dia).toLocaleDateString('pt-BR')}</span>
-            <span class="secundario">${d.qtd_pix} Pix</span>
-          </div>
-          <span class="valor-destaque">${formatarMoeda(d.total_recebido)}</span>
-        `;
-        item.addEventListener('click', () => carregarDetalheDia(d.dia));
-        resumoEl.appendChild(item);
+      listaAtiva = criarListaNavegavel('lista-hist-dias', dias.map(d => ({
+        principal: new Date(d.dia).toLocaleDateString('pt-BR'),
+        secundario: `${d.qtd_pix} Pix aprovado(s)`,
+        destaque: formatarMoeda(d.total_recebido),
+        _raw: d,
+      })), {
+        vazio: 'Nenhum Pix aprovado nesse mês.',
+        onSelect(item){ estado.histDia = item._raw.dia; irPara('hist-pix'); },
       });
     } catch (e) {
-      resumoEl.innerHTML = '<div class="vazio">Erro ao carregar resumo.</div>';
+      container.innerHTML = '<div class="vazio">Erro de conexão com o servidor.</div>';
     }
-  });
+  },
+});
 
-  async function carregarDetalheDia(dia){
-    const wrap = document.getElementById('hist-detalhe-wrap');
-    const detalheEl = document.getElementById('hist-detalhe');
-    const tituloEl = document.getElementById('hist-detalhe-titulo');
-
-    wrap.classList.remove('hidden');
-    tituloEl.textContent = `Pix de ${new Date(dia).toLocaleDateString('pt-BR')}`;
-    detalheEl.innerHTML = '<div class="vazio">Carregando...</div>';
-
+registrarTela('hist-pix', {
+  elId: 'tela-hist-pix',
+  trilha: 'Histórico · Pix',
+  rodape: [ { tecla:'↑↓', texto:'Navegar' }, { tecla:'↵', texto:'Abrir', cor:'ir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ listaAtiva = null; voltar(); },
+  async onShow(){
+    listaAtiva = null;
+    document.getElementById('titulo-hist-pix').textContent = `Pix de ${new Date(estado.histDia).toLocaleDateString('pt-BR')}`;
+    const container = document.getElementById('lista-hist-pix');
+    container.innerHTML = '<div class="vazio">Carregando…</div>';
     try {
-      const resp = await fetch(`${API_BASE}/admin/historico/detalhe?caixaId=${estado.histCaixaId}&dia=${dia}`, { headers: headersAdmin() });
+      const resp = await fetch(`${API_BASE}/admin/historico/detalhe?caixaId=${estado.histCaixaId}&dia=${estado.histDia}`, { headers: headersAdmin() });
       const itens = await resp.json();
-
-      if (!resp.ok || !itens.length) {
-        detalheEl.innerHTML = '<div class="vazio">Nenhum Pix encontrado.</div>';
-        return;
-      }
-
-      detalheEl.innerHTML = '';
-      itens.forEach(p => {
-        const item = document.createElement('div');
-        item.className = 'lista-item';
-        item.innerHTML = `
-          <div class="info">
-            <span class="principal">${formatarMoeda(p.valor)} <span class="secundario">· ${p.status}</span></span>
-            <span class="secundario">${new Date(p.criado_em).toLocaleTimeString('pt-BR')}</span>
-          </div>
-          <button class="btn-sm btn-sm-danger" data-excluir-pix="${p.id}">Excluir</button>
-        `;
-        detalheEl.appendChild(item);
-      });
-
-      detalheEl.querySelectorAll('[data-excluir-pix]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.getAttribute('data-excluir-pix');
-          if (!confirm('Excluir esse Pix do histórico? Essa ação não pode ser desfeita.')) return;
-
-          try {
-            const resp = await fetch(`${API_BASE}/admin/pix/${id}`, {
-              method: 'DELETE',
-              headers: headersAdmin(),
-            });
-            if (resp.ok) carregarDetalheDia(dia);
-          } catch (e) {
-            alert('Erro de conexão com o servidor.');
-          }
-        });
+      listaAtiva = criarListaNavegavel('lista-hist-pix', itens.map(p => ({
+        principal: formatarMoeda(p.valor),
+        secundario: new Date(p.criado_em).toLocaleTimeString('pt-BR'),
+        tagHtml: `<span class="tag-status ${p.status}">${p.status}</span>`,
+        _raw: p,
+      })), {
+        vazio: 'Nenhum Pix encontrado nesse dia.',
+        onSelect(item){ estado.histPixSelecionado = item._raw; irPara('hist-detalhe'); },
       });
     } catch (e) {
-      detalheEl.innerHTML = '<div class="vazio">Erro ao carregar detalhe.</div>';
+      container.innerHTML = '<div class="vazio">Erro de conexão com o servidor.</div>';
     }
-  }
+  },
+});
+
+registrarTela('hist-detalhe', {
+  elId: 'tela-hist-detalhe',
+  trilha: 'Histórico · Comprovante',
+  rodape: [ { tecla:'1', texto:'Reimprimir' }, { tecla:'2', texto:'Excluir' }, { tecla:'ESC', texto:'Voltar' } ],
+  onEsc(){ voltar(); },
+  onShow(){
+    const p = estado.histPixSelecionado;
+    document.getElementById('recibo-hist-detalhe').innerHTML = `
+      <div class="recibo-linha"><span>Caixa</span><span>${estado.histCaixaNome || estado.histCaixaId}</span></div>
+      <div class="recibo-linha"><span>Turno</span><span>${p.turno || '—'}º</span></div>
+      <div class="recibo-linha"><span>Valor</span><span>${formatarMoeda(p.valor)}</span></div>
+      <div class="recibo-linha"><span>Status</span><span>${p.status}</span></div>
+      <div class="recibo-linha"><span>Criado em</span><span>${new Date(p.criado_em).toLocaleString('pt-BR')}</span></div>
+      <div class="recibo-linha"><span>ID Mercado Pago</span><span>${p.mp_payment_id || '—'}</span></div>
+    `;
+  },
+  onOpcao(key){
+    const p = estado.histPixSelecionado;
+    if (key === '1') {
+      if (!p.pago_em) { alert('Esse Pix ainda não foi pago — não há comprovante para imprimir.'); return; }
+      const dataPagamento = new Date(p.pago_em);
+      imprimirComprovante({
+        caixaNome: estado.histCaixaNome || `Caixa ${estado.histCaixaId}`,
+        turno: p.turno || '—',
+        valor: p.valor,
+        horario: dataPagamento.toLocaleTimeString('pt-BR'),
+        data: dataPagamento.toLocaleDateString('pt-BR'),
+        id: p.mp_payment_id || '—',
+      });
+    }
+    if (key === '2') {
+      if (!confirm('Excluir esse Pix do histórico? Essa ação não pode ser desfeita.')) return;
+      fetch(`${API_BASE}/admin/pix/${p.id}`, { method:'DELETE', headers: headersAdmin() })
+        .then(resp => { if (resp.ok) voltar(); else alert('Não foi possível excluir.'); })
+        .catch(() => alert('Erro de conexão com o servidor.'));
+    }
+  },
+});
+
+/* =========================================================================
+   INICIALIZACAO
+   ========================================================================= */
+mostrarTela('inicio');
 </script>
 </body>
 </html>
-
